@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const FoodsSchema = new mongoose.Schema({
+const FoodSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -19,6 +19,9 @@ const FoodsSchema = new mongoose.Schema({
         default: false
     }
     //later we can seperate this to contain Dishes and Drinks
+},{
+    timestamps: true
 })
 
-const Food = mongoose.model('Foods', )
+const Food = mongoose.model('Foods', FoodSchema )
+module.exports = Food
