@@ -34,7 +34,7 @@ const DrinkSchema = new mongoose.Schema({
         default: 0
     }
 });
-const Drink = mongoose.model('Drink', DrinkSchema)
+// const Drink = mongoose.model('Drink', DrinkSchema)
 
 const FoodSchema = new mongoose.Schema({
     foodType: {
@@ -55,14 +55,14 @@ const FoodSchema = new mongoose.Schema({
     },
     protien: {
         type: String,
-        enum: ["Meat", "Fish", "Chicken", "Turkey" ]
+        enum: ["Beef", "Fish", "Chicken", "Turkey" ]
     },
     foodPrice: {
         type: Number,
         default : 0
     }
 });
-const Food = mongoose.model('Food', FoodSchema)
+// const Food = mongoose.model('Food', FoodSchema)
 
 const OrderSchema = new mongoose.Schema({
     name: {
@@ -76,6 +76,21 @@ const OrderSchema = new mongoose.Schema({
     },
     food: FoodSchema,
     drinks: DrinkSchema,
+    takeOutPrice: {
+        type: Number,
+        default: function () {
+            if (this.takeOut === true) {
+                return 10;
+            } else {
+                return 0;
+            }
+        }
+    },
+    paymentOnDelivery: {
+        type: String,
+        default: false
+
+    },
     completed: {
         type: Boolean,
         default: false
@@ -87,7 +102,7 @@ const OrderSchema = new mongoose.Schema({
     orderPlacedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        // required: true,
     },
 }, 
 {   timestamps: true
@@ -120,14 +135,14 @@ DrinkSchema.pre('save', function (next) {
 
 const priceMapping = {
     singleDish: {
-        Rice: { Meat: 2000, Chicken: 2500, Turkey: 3500, Fish: 2000 },
-        Beans: { Meat: 2000, Chicken: 2000, Turkey: 3000, Fish: 2000 },
-        Yam: { Meat: 1500, Chicken: 1800, Turkey: 2000, Fish: 1500 }
+        Rice: { Beef: 2000, Chicken: 2500, Turkey: 3500, Fish: 2000 },
+        Beans: { Beef: 2000, Chicken: 2000, Turkey: 3000, Fish: 2000 },
+        Yam: { Beef: 1500, Chicken: 1800, Turkey: 2000, Fish: 1500 }
     },
     soup: {
-        Afang: { Meat: 3000, Chicken: 4000, Turkey: 4000, Fish: 3000 },
-        Edikaikong: { Meat: 3000, Chicken: 4000, Turkey: 4000, Fish: 3000 },
-        Egwusi: { Meat: 4000, Chicken: 4500, Turkey: 4500, Fish: 4000 }
+        Afang: { Beef: 3000, Chicken: 4000, Turkey: 4000, Fish: 3000 },
+        Edikaikong: { Beef: 3000, Chicken: 4000, Turkey: 4000, Fish: 3000 },
+        Egwusi: { Beef: 4000, Chicken: 4500, Turkey: 4500, Fish: 4000 }
     }
 };
 
@@ -187,10 +202,63 @@ OrderSchema.pre('save', async function(next) {
     }
 });
 
+
+OrderSchema.pre('updateOne', async function(next) {
+    try {
+        const order = await this.model.findOne(this.getQuery());
+        const foodPopulatedOrder = await order.populate('food').execPopulate();
+        const food = foodPopulatedOrder.food;
+        const drinkPopulatedOrder = await order.populate('drinks').execPopulate();
+        const drink = drinkPopulatedOrder.drinks;
+
+        // Calculate the old foodPrice and drinkPrice
+        let oldFoodPrice = 0;
+        let oldDrinkPrice = 0;
+
+        if (food) {
+            oldFoodPrice = food.foodPrice;
+        }
+        
+        if (drink) {
+            oldDrinkPrice = drink.drinkPrice;
+        }
+
+        // Calculate the new foodPrice and drinkPrice based on the update
+        let newFoodPrice = oldFoodPrice;
+        let newDrinkPrice = oldDrinkPrice;
+
+        if (this.getUpdate().$set.food) {
+            newFoodPrice = this.getUpdate().$set.food.foodPrice;
+        }
+        
+        if (this.getUpdate().$set.drinks) {
+            newDrinkPrice = this.getUpdate().$set.drinks.drinkPrice;
+        }
+
+        // Calculate the totalPrice based on takeOut value
+        if (this.getUpdate().$set.takeOut === true) {
+            this.getUpdate().$set.totalPrice = newFoodPrice + newDrinkPrice + 10;
+        } else {
+            this.getUpdate().$set.totalPrice = newFoodPrice + newDrinkPrice;
+        }
+
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+
+
 function generateOrderName(){
     const customMoniker = moniker.generator([moniker.adjective, moniker.noun]);
     return customMoniker.choose()
 }
+
+
+
+
 const Order = mongoose.model('Order', OrderSchema);
 
 module.exports = Order;

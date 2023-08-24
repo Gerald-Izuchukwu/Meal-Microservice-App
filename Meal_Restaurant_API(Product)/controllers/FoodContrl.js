@@ -61,6 +61,24 @@ const mostExpensiveFood = async(req, res)=>{
     }
 }
 // update a food
+const updateFood = async(req, res)=>{
+    try {
+        const foodId = req.params.id
+        const food = await Food.findById(foodId)
+        if(!food){
+            console.log('No such Food');
+            return res.status(400).send("Food doesnt exist")
+        }
+        const updatedFood = await Food.findByIdAndUpdate(foodId, {$set: req.body}, {new: true})
+        return res.status(201).json({
+            msg: "Food Updated",
+            Food: updatedFood
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('Internal Server Error' + error.message)
+    }
+}
 // delete this food
 const deleteFood = async(req, res)=>{
     try {
@@ -79,4 +97,4 @@ const deleteFood = async(req, res)=>{
 //update a food (eg, update price)
 // discount a food
 // discount foods
-module.exports = {addFood, getAFood, getFoods, mostExpensiveFood, deleteFood}
+module.exports = {addFood, getAFood, getFoods, mostExpensiveFood, deleteFood, updateFood}

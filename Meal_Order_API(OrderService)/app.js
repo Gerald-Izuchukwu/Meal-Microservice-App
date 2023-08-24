@@ -10,7 +10,6 @@ connectDB()
 
 app.use(morgan('dev'))
 
-
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'ejs'); //set this at the general level
