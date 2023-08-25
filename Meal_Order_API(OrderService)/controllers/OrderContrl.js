@@ -1,6 +1,34 @@
 const Order = require('../models/OrderModel')
 const axios = require('axios').default
-const isAuthenticated = require('../isAuthenticated')
+
+
+// get list of food that the restaurant has 
+const getFoods = async(req, res)=>{
+    try {
+        const allFood = (await axios.get("http://localhost:9601/meal-api/v1/food/")).data
+        if(!allFood){
+            res.status(200).send('There is no already prepared food at the moment, please consider making an order instead of placing one')
+        }else{
+            return res.status(200).json(allFood)
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('Internal Server Error  ' + error.message)
+    }
+}
+
+const getDiscountedFood = async(req, res)=>{
+    try {
+        const discountedFood = (await axios.get('http://localhost:9601/meal-api/v1/food/discountedFoods')).data
+        if(!discountedFood){
+            return res.status(200).send("Sorry, there are no discounted food at the moment")
+        }
+        return res.status(200).json(discountedFood)
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('Internal Server Error  ' + error.message)
+    }
+}
 
 // make an order from scratch
 const makeOrder = async(req, res)=>{
@@ -17,7 +45,7 @@ const makeOrder = async(req, res)=>{
         return res.status(201).json({msg: "order Saved", order})
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error' + error.message)
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
 
 }
@@ -37,7 +65,7 @@ const placeOrder = async(req, res)=>{
         const food = await axios.get("http://localhost:9601/meal-api/v1/food/")
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error' + error.message)
+        return res.status(500).send('Internal Server Error ' + error.message)
     
     }
 }
@@ -53,7 +81,7 @@ const getOrders = async(req, res)=>{
         
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error' + error.message)
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
 }
 // get a particular order
@@ -63,12 +91,12 @@ const getAnOrder = async (req, res)=>{
         const order = await Order.findById(id)
         if(!order){
             console.log('Couldnt find that order');
-            return res.status(400).send("No order found")
+            return res.status(400).send("No orderr found")
         }
         return res.status(200).json({order})
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error' + error.message)
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
 }
 
@@ -89,7 +117,7 @@ const updateOrder = async(req, res)=>{
         })
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error' + error.message)
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
 }
 
@@ -106,7 +134,7 @@ const deleteOrder = async(req, res)=>{
         return res.status(200).send('Order has been deleted')
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error' + error.message)      
+        return res.status(500).send('Internal Server Error ' + error.message)      
     }
 }
 
@@ -116,11 +144,42 @@ const deleteAllOrders = async(req, res)=>{
         return res.status(200).send('All Orders have been deleted')
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error' + error.message)
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
 }
+
+
+// completed order route - a user should mark an order completed when they receive the order
+const receivedOrder = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+
+        // Find the order by orderId
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Update the order's completed status
+        order.completed = true;
+        await order.save();
+        
+
+        return res.status(200).json({ message: 'Order has been received therefore marked as completed' });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal Server Error ' + error  });
+    }
+}
+
+
+
+// Routes for V1.2
 // get my most expensive order
 const sortOrder = async(req, res)=>{
+
     try {
         const orders = await Order.find()
 
@@ -133,4 +192,16 @@ const sortOrder = async(req, res)=>{
 // get a list of all restaurants, the food and their rating
 
 // completed order route
-module.exports = {makeOrder, getOrders, getAnOrder, updateOrder, deleteOrder, deleteAllOrders, placeOrder}
+// getFoods()
+module.exports = {
+    makeOrder, 
+    getOrders, 
+    getAnOrder,  
+    updateOrder, 
+    deleteOrder, 
+    deleteAllOrders, 
+    placeOrder, 
+    getFoods, 
+    getDiscountedFood,
+    receivedOrder
+}
