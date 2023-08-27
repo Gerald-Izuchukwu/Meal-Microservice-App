@@ -10,75 +10,136 @@ const mongoose = require('mongoose')
 const SoupSchema= new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Afang', "Edikaikong", "Egwusi", "White", "Eforiro", "Banga", "Bitterleaf", "Ogbono", "Oha", "Okro", "Pepper-Soup"]
+    },
+    ofType: {
+        type: String,
+        enum : ["Soup"]
     },
 
-    foodPrice: {
+    soupPrice: {
         type: Number,
         default : 0
     }
+},{
+    timestamps: true
 });
 
 const SwallowSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        enum: ["Pounded Yam", "Eba", "Fufu", "Wheat", "Unripped Plantain", "Ripped Plantain", "Semo", "Amala", "Tuwo Shinkafa", "Tuwo Masara"]
+
     },
 
-    foodPrice: {
+    ofType: {
+        type: String,
+        enum : ["Swallow"]
+    },
+    swallowPrice: {
         type: Number,
         default : 0
     }
+},{
+    timestamps: true
 });
 
 const SnacksSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        enum: ["Meshai", "Shawarma", "Fruit-Salad", "Small-Chops"]
+    },
+    ofType: {
+        type: String,
+        enum : ["Snacks"]
     },
 
-    foodPrice: {
+    snacksPrice: {
         type: Number,
         default : 0
     }
+},{
+    timestamps: true
 })
 
 const DrinksSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
+        // enum: []
     },
 
-    foodPrice: {
+    ofType: {
+        type: String,
+        enum : ["Drink"]
+    },
+
+    drinkPrice: {
         type: Number,
         default : 0
     }
+},{
+    timestamps: true
 })
 
 const SingleFoodSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Rice', 'Beans', "Yam"]
     },
 
-    foodPrice: {
+    ofType: {
+        type: String,
+        enum : ["SingleFood"]
+    },
+
+    singleFoodPrice: {
         type: Number,
         default : 0
     }
+},{
+    timestamps: true
 })
 
-const FoodSchema = new mongoose.Schema({
+const ProtienSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        enum: ["Beef", "Fish", "Chicken", "Turkey" ]
+    },
+
+    ofType: {
+        type: String,
+        enum : ["Protien"]
+    },
+
+    protienPrice: {
+        type: Number,
+        default : 0
+    }
+},{
+    timestamps: true
+})
+
+const DishSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
         unique: true
+    },
+    ofType: {
+        type: String,
+        enum : ["Dish"]
     },
     description:{
         type: String,
         required: true,
         unique: true
     },
-    price:{
+    dishPrice:{
         type: Number,
         required: true,
     },
@@ -92,5 +153,11 @@ const FoodSchema = new mongoose.Schema({
 })
 
 
-const Food = mongoose.model('Foods', FoodSchema )
-module.exports = Food
+const Soup = mongoose.model('Soups', SoupSchema )
+const Swallow = mongoose.model('Swallow', SwallowSchema )
+const Snacks = mongoose.model('Snacks', SnacksSchema )
+const Drinks = mongoose.model('Drinks', DrinksSchema )
+const Dish = mongoose.model('Dishes', DishSchema )
+const SingleFood = mongoose.model('SingleFood', SingleFoodSchema )
+const Protien = mongoose.model('Protiens', ProtienSchema)
+module.exports = {Soup, Swallow, Snacks, Drinks, Dish, SingleFood, Protien}
