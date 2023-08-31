@@ -1,10 +1,3 @@
-//later in v1.2, this schema will be the schema holding all single food and drinks like the one in order schema
-// and the Dishes Schema will hold the dishes pieced together
-
-// remember, order model is only for when a user wants to make an order, 
-// it in no way saves the food the restaurant has, it only saves the order a user makes
-
-// we would also export every schema so a user can browse a specific thing, either soup, drinks, snacks etc
 const mongoose = require('mongoose')
 
 const SoupSchema= new mongoose.Schema({
@@ -18,9 +11,14 @@ const SoupSchema= new mongoose.Schema({
         enum : ["Soup"]
     },
 
-    soupPrice: {
+    price: {
         type: Number,
+        required:true,
         default : 0
+    },
+    discount: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true
@@ -38,9 +36,14 @@ const SwallowSchema = new mongoose.Schema({
         type: String,
         enum : ["Swallow"]
     },
-    swallowPrice: {
+    price: {
         type: Number,
+        required:true,
         default : 0
+    },
+    discount: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true
@@ -57,9 +60,14 @@ const SnacksSchema = new mongoose.Schema({
         enum : ["Snacks"]
     },
 
-    snacksPrice: {
+    price: {
         type: Number,
-        default : 0
+        default : 0,
+        required: true
+    },
+    discount: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true
@@ -77,9 +85,14 @@ const DrinksSchema = new mongoose.Schema({
         enum : ["Drink"]
     },
 
-    drinkPrice: {
+    price: {
         type: Number,
-        default : 0
+        default : 0,
+        required:true
+    },
+    discount: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true
@@ -97,9 +110,14 @@ const SingleFoodSchema = new mongoose.Schema({
         enum : ["SingleFood"]
     },
 
-    singleFoodPrice: {
+    price: {
         type: Number,
-        default : 0
+        default : 0,
+        required: true
+    },
+    discount: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true
@@ -116,9 +134,14 @@ const ProtienSchema = new mongoose.Schema({
         enum : ["Protien"]
     },
 
-    protienPrice: {
+    price: {
         type: Number,
-        default : 0
+        default : 0,
+        required: true
+    },
+    discount: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true
@@ -139,15 +162,27 @@ const DishSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    dishPrice:{
+    price:{
         type: Number,
         required: true,
+        default: 0
     },
     discount: {
         type: Boolean,
         default: false
     }
     //later we can seperate this to contain Dishes and Drinks
+},{
+    timestamps: true
+})
+const FoodSchema = new mongoose.Schema({
+    Swallow:SwallowSchema,
+    Soup: SoupSchema,
+    Snacks: SnacksSchema,
+    SingleFood: SingleFoodSchema,
+    Protien: ProtienSchema,
+    Dish: DishSchema,
+    Drinks: DrinksSchema
 },{
     timestamps: true
 })
@@ -160,4 +195,5 @@ const Drinks = mongoose.model('Drinks', DrinksSchema )
 const Dish = mongoose.model('Dishes', DishSchema )
 const SingleFood = mongoose.model('SingleFood', SingleFoodSchema )
 const Protien = mongoose.model('Protiens', ProtienSchema)
-module.exports = {Soup, Swallow, Snacks, Drinks, Dish, SingleFood, Protien}
+const Food = mongoose.model('Food', FoodSchema)
+module.exports = {Soup, Swallow, Snacks, Drinks, Dish, SingleFood, Protien, Food}

@@ -4,9 +4,10 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const connectDB = require('./database/db')
+const rabbitConnect = require('./rabbitConnect')
 const FoodRouter = require('./routes/foodRoutes')
-const path = require('path')
 connectDB()
+rabbitConnect()
 
 app.use(morgan('dev'))
 

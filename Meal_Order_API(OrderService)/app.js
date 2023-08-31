@@ -4,9 +4,11 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const connectDB = require('./database/db')
+const rabbitConnect = require('./rabbitConnect')
 const OrderRouter = require('./routes/orderRoutes')
 const UserRouter = require('./routes/userRoutes')
 connectDB()
+rabbitConnect()
 
 app.use(morgan('dev'))
 

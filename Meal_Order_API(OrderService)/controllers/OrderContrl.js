@@ -1,72 +1,135 @@
 const Order = require('../models/OrderModel')
+const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
 
-// get list of food that the restaurant has 
-const getFoods = async(req, res)=>{
-    try {
-        const allFood = (await axios.get("http://localhost:9601/meal-api/v1/food/")).data
-        if(!allFood){
-            res.status(200).send('There is no already prepared food at the moment, please consider making an order instead of placing one')
-        }else{
-            return res.status(200).json(allFood)
-        }
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send('Internal Server Error  ' + error.message)
+// rabbitConnect().then((channel)=>{
+
+//     channel.consume("ORDER", data=>{
+//         const {food} = JSON.parse(data.content)
+//         console.log('Consuming ORDER Queue')
+//         console.log(food);
+//         // Order.create({
+//         //     food:foodToOrder, 
+//         //     address : "userAddress", //correct this later to be the main user add
+//         //     user: "userEmail", //correct this later to be the main user email
+//         //     takeOut: true,
+//         //     paymentOnDelivery: false,
+//         //     totalPrice: 1000
+//         // })
+//         // send it to ORDER queue
+//         channel.ack(data)
+
+//     })
+//     setTimeout(()=>{
+//         channel.close()
+//         // return res.status(200).json({foodToOrder})
+//     }, 2000)
+// })
+
+async function createOrder(food) {
+    let totalPrice = 0
+    for(let t=0; t<food.length; t++){
+        totalPrice += food[t].price
+    }
+    const newOrder = await Order.create({
+        food, 
+        address : "userAddress", //correct this later to be the main user add
+        user: "userEmail", //correct this later to be the main user email
+        takeOut: true,
+        paymentOnDelivery: false,
+        totalPrice: 1000
+    })
+    return newOrder
+}
+
+function switchFood (food, foodToOrder,items, type, name){
+    switch (type) {
+        case "soup":
+            items = Object.values(food.soups)
+            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
+            break;
+        case "swallow":
+            items = Object.values(food.swallow)
+            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
+            break;
+        case "snacks":
+            items = Object.values(food.snacks)
+            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
+            break;
+        case "dish":
+            items = Object.values(food.dish)
+            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
+            break;
+        case "singleFood":
+            items = Object.values(food.singleFood)
+            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
+            break;
+        case "drinks":
+            items = Object.values(food.drinks)
+            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
+            break;
+        case "protien":
+            items = Object.values(food.protien)
+            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
+            break;
+        default:
+            break;
     }
 }
 
-const getDiscountedFood = async(req, res)=>{
-    try {
-        const discountedFood = (await axios.get('http://localhost:9601/meal-api/v1/food/discountedFoods')).data
-        if(!discountedFood){
-            return res.status(200).send("Sorry, there are no discounted food at the moment")
-        }
-        return res.status(200).json(discountedFood)
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send('Internal Server Error  ' + error.message)
-    }
-}
-
-// make an order from scratch
-const makeOrder = async(req, res)=>{
-    try {
-        const {takeOut, food, drinks, paymentOnDelivery} = req.body
-        if(!(takeOut, food, drinks,paymentOnDelivery)){
-            return res.status(400).send('Please enter all required fields')
-    
-        }
-        const newOrder = new Order({
-            takeOut, food, drinks, paymentOnDelivery
-        })
-        const order = await newOrder.save()
-        return res.status(201).json({msg: "order Saved", order})
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send('Internal Server Error ' + error.message)
-    }
-
-}
 
 
 // place order from already sampled food ----incomplete route
 const placeOrder = async(req, res)=>{
     try {
-        const allFood = (await axios.get("http://localhost:9601/meal-api/v1/food/")).data
-        if(!allFood){
-            res.status(200).send('There is no already prepared food at the moment, please consider making an order instead of placing one')
-        }else{
-            const foodIds = allFood.food.map((food)=>food._id)
-            console.log(foodIds);
-            return res.status(200).json(allFood)
-        }
-        const food = await axios.get("http://localhost:9601/meal-api/v1/food/")
+        await rabbitConnect().then((channel)=>{
+            channel.consume("ORDER", data=>{
+                const {food} = JSON.parse(data.content)
+                console.log('Consuming ORDER Queue')
+                // console.log(foodToOrder);
+                Order.create({
+                    food,
+                    address : "userAddress", //correct this later to be the main user add
+                    user: "userEmail", //correct this later to be the main user email
+                    takeOut: true,
+                    paymentOnDelivery: false,
+                    totalPrice: 1000
+                }).then((data)=>{
+                    channel.sendToQueue("PRODUCT", Buffer.from(JSON.stringify({data})))
+                    console.log(data)
+                    return res.status(200).json({data})
+                })
+                // send it to ORDER queue
+                channel.ack(data)
+            })
+            
+            setTimeout(()=>{
+                channel.close()
+                // return res.status(200).json({foodToOrder})
+            }, 2000)
+        })
+        // const food = await axios.get("http://localhost:9601/meal-api/v1/food/")
     } catch (error) {
         console.log(error);
         return res.status(500).send('Internal Server Error ' + error.message)
     
+    }
+}
+
+// get list of food that the restaurant has 
+const getFoods = async(req, res)=>{
+    try {
+        const {type} = req.query
+        const allFood = (await axios.get(`http://localhost:9601/meal-api/v1/food/get-food?type=${type}`)).data
+        if(!allFood){
+            res.status(200).send('There is no already prepared food at the moment')
+        }else{
+            return res.status(200).json(allFood)
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('Internal Server Error  ' + error.message)
     }
 }
 
@@ -194,7 +257,6 @@ const sortOrder = async(req, res)=>{
 // completed order route
 // getFoods()
 module.exports = {
-    makeOrder, 
     getOrders, 
     getAnOrder,  
     updateOrder, 
@@ -202,6 +264,5 @@ module.exports = {
     deleteAllOrders, 
     placeOrder, 
     getFoods, 
-    getDiscountedFood,
     receivedOrder
 }
