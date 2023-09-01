@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema({
         unique: false,
 
     },
+
     uniqueUser: {
         type: String,
         required: false,
@@ -27,6 +28,7 @@ const UserSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+  
 
 
 
@@ -37,9 +39,16 @@ UserSchema.pre('save', async function (next) {
 })
 
 function generateUniqueUser(){
-    const userName = generateUsername("_", 2)
+    const userName = generateUsername('-', 3)
     return userName
 }
+
+
+// UserSchema.pre('save', async function(next){
+//     const userName = generateFromEmail(this.email, 3)
+//     this.uniqueUser = userName
+//     next()
+// })
 
 const User = mongoose.model('User', UserSchema)
 module.exports = User

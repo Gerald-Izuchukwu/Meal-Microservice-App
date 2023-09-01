@@ -3,30 +3,6 @@ const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
 
-// rabbitConnect().then((channel)=>{
-
-//     channel.consume("ORDER", data=>{
-//         const {food} = JSON.parse(data.content)
-//         console.log('Consuming ORDER Queue')
-//         console.log(food);
-//         // Order.create({
-//         //     food:foodToOrder, 
-//         //     address : "userAddress", //correct this later to be the main user add
-//         //     user: "userEmail", //correct this later to be the main user email
-//         //     takeOut: true,
-//         //     paymentOnDelivery: false,
-//         //     totalPrice: 1000
-//         // })
-//         // send it to ORDER queue
-//         channel.ack(data)
-
-//     })
-//     setTimeout(()=>{
-//         channel.close()
-//         // return res.status(200).json({foodToOrder})
-//     }, 2000)
-// })
-
 async function createOrder(food) {
     let totalPrice = 0
     for(let t=0; t<food.length; t++){
