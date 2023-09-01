@@ -10,15 +10,16 @@ const {
     updateFood, 
     getDiscountedFood,
     mostExpensiveFood,
-    sendFoodToQueue
 } = require('../controllers/FoodContrl')
+const isAuthenticated = require('../isAuthenticated')
 
-router.route('/buy-food').post(buyFood)
-router.route('/get-food').get(getFood)
-router.route('/get-food-type').get(getFoodBasedOnType)
-router.route('/add-food').post(addFood)
-router.route('/sendfoodtoqueue').post(sendFoodToQueue)
-router.route('/discountedFoods').get(getDiscountedFood)
-router.route('/mostExpensiveFood').get(mostExpensiveFood)
-router.route("/:id").get(getAFood).delete(deleteFood).put(updateFood)
+
+router.route('/buy-food').post(isAuthenticated, buyFood)
+router.route('/get-food').get(isAuthenticated, getFood)
+router.route('/get-food-type').get(isAuthenticated, getFoodBasedOnType)
+router.route('/add-food').post(isAuthenticated, addFood)
+// router.route('/sendfoodtoqueue').post(sendFoodToQueue)
+router.route('/discountedFoods').get(isAuthenticated,getDiscountedFood)
+router.route('/mostExpensiveFood').get(isAuthenticated,mostExpensiveFood)
+router.route("/:id").get(isAuthenticated, getAFood).delete(isAuthenticated, deleteFood).put(isAuthenticated,updateFood)
 module.exports = router

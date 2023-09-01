@@ -3,36 +3,6 @@ const {Soup, Swallow, SingleFood, Snacks, Drinks, Dish, Protien, Food} = require
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
-const sendFoodToQueue = async(req, res)=>{
-    try {
-        
-        const soups = await Soup.find()
-        const swallow = await Swallow.find()
-        const singleFood = await SingleFood.find()
-        const snacks = await Snacks.find()
-        const drinks = await Drinks.find()
-        const dish = await Dish.find()
-        const protien = await Protien.find()
-        const food = {
-            "soups": {...soups}, 
-            "swallow": {...swallow} ,
-            "singleFood": {...singleFood},
-            "snacks": {...snacks},
-            "drinks": {...drinks},
-            "dish": {...dish},
-            "protien": {...protien}
-        }
-        
-        rabbitConnect().then((channel)=>{
-            channel.sendToQueue("ORDER", Buffer.from(JSON.stringify({food})))//later we add userEmail from req.user.email
-        })
-        console.log("sending food to queue")
-        return res.status(200).json({food})
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send('Internal Server Error ' + error.message)
-    }
-}
 
 const buyFood =async(req, res)=>{
     try {
@@ -57,11 +27,13 @@ const buyFood =async(req, res)=>{
 
         await rabbitConnect().then((channel)=>{
             channel.sendToQueue("ORDER", Buffer.from(JSON.stringify({food})))//later we add userEmail from req.user.email
-            console.log("sending food to queue")
+            console.log("sending food to ORDER queue")
             return
+        }).then(()=>{
+            axios.post("http://localhost:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
         })
-        const trig = await axios.get("http://localhost:9600/meal-api/v1/order/placeOrder")
-        console.log(trig.data);
+        // const trig = await axios.get("http://localhost:9600/meal-api/v1/order/placeOrder")
+        // console.log(trig.data);
 
         rabbitConnect().then((channel)=>{
             channel.consume("PRODUCT", (data)=>{
@@ -169,7 +141,24 @@ const addFood = async(req, res)=>{
 
 const getFood = async(req, res)=>{
     try {
-        const food = await Food.find()
+        const soups = await Soup.find()
+        const swallow = await Swallow.find()
+        const snacks = await Snacks.find()
+        const singleFood = await SingleFood.find()
+        const protien = await Protien.find()
+        const dish = await Dish.find()
+        const drinks = await Drinks.find()
+        const food = [
+            {
+                "soups": {...soups}, 
+                "swallow": {...swallow} ,
+                "singleFood": {...singleFood},
+                "snacks": {...snacks},
+                "drinks": {...drinks},
+                "dish": {...dish},
+                "protiens": {...protien}
+            }
+        ]
         return res.status(200).json({food})
     } catch (error) {
         console.log(error);
@@ -270,7 +259,6 @@ const getAFood = async (req, res) => {
         return res.status(500).send('Internal Server Error ' + error.message);
     }
 };
-
 
 // update a food, also be used to discount food
 const updateFood = async(req, res)=>{
@@ -437,6 +425,17 @@ const getDiscountedFood = async (req, res) => {
     }
 };
 
+module.exports = {
+    addFood, 
+    getAFood, 
+    buyFood,
+    getFood,
+    getFoodBasedOnType, 
+    deleteFood, 
+    updateFood, 
+    getDiscountedFood, 
+    mostExpensiveFood,
+}
 
 // routes for v1.2
 // mark order as ready for pickup
@@ -444,138 +443,3 @@ const getDiscountedFood = async (req, res) => {
 //update a food (eg, update price)
 // discount a food
 // get all Orders from a user
-module.exports = {
-    addFood, 
-    getAFood, 
-    buyFood,
-    getFood,
-    getFoodBasedOnType, 
-    mostExpensiveFood, 
-    deleteFood, 
-    updateFood, 
-    getDiscountedFood, 
-    mostExpensiveFood,
-    sendFoodToQueue
-}
-
-
-
-
-// const getDishes = async()=>{
-//     try {
-//         const food = await Food.find()
-//         if(!food){
-//             console.log('No food found');
-//             return res.status(400).send('We couldnt find any food')
-//         }
-//         return res.status(200).json({food})
-        
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).send('Internal Server Error ' + error.message)
-//     }
-// }
-
-
-// const addFood = async(req, res)=>{
-//     try {
-//         const {name, description, price} = req.body
-//         if(!(name, description, price)){
-//             return res.status(400).send('Please enter all required fields')
-    
-//         }
-//         const newFood = new Food({
-//             name, description, price, 
-//         })
-//         const food = await newFood.save()
-//         return res.status(201).json({msg: "Food Saved", food})
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).send('Internal Server Error ' + error.message)
-//     }
-
-// }
-
-
-// const Joi = require('joi');
-
-// const addFood = async (req, res) => {
-//     try {
-//         const { error, value } = validateFood(req.body);
-
-//         if (error) {
-//             return res.status(400).send(error.details[0].message);
-//         }
-
-//         const { name, price, ofType, ...otherFields } = value;
-
-//         const FoodModel = getModelByofType(ofType);
-
-//         const newFood = new FoodModel({
-//             name,
-//             price,
-//             ...otherFields,
-//         });
-
-//         const food = await newFood.save();
-//         return res.status(201).json({ msg: "Food Saved", food });
-
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).send('Internal Server Error ' + error.message);
-//     }
-// }
-
-// function validateFood(foodData) {
-//     const schema = Joi.object({
-//         name: Joi.string().required(),
-//         price: Joi.number().required(),
-//         ofType: Joi.string().valid('Dish', 'Soup', 'Swallow', 'SingleFood', 'Snacks', 'Protien', 'Drink').required(),
-//         // Add other validation rules for specific fields based on the ofType
-//     });
-
-//     return schema.validate(foodData);
-// }
-
-// function getModelByofType(ofType) {
-//     switch (ofType) {
-//         case 'Dish':
-//             return Dish;
-//         case 'Soup':
-//             return Soup;
-//         case 'Swallow':
-//             return Swallow;
-//         case 'SingleFood':
-//             return SingleFood;
-//         case 'Snacks':
-//             return Snacks;
-//         case 'Protien':
-//             return Protien;
-//         case 'Drink':
-//             return Drink;
-//         default:
-//             throw new Error('Invalid food ofType');
-//     }
-// }
-
-// const discountFood = async(req, res)=>{
-//     try {
-//         const foodId = req.params.id
-//         const food = Food.findById(foodId)
-//         if(!food){
-//             console.log('No such Food');
-//             return res.status(400).send("Food doesnt exist")
-//         }
-//         const discountedFood = await Food.findByIdAndUpdate(foodId, {$set: req.body}, {new: true})
-//         return res.status(201).json({
-//             msg: "Food Updated",
-//             Food: discountedFood
-//         })
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).send('Internal Server Error ' + error.message)
-//     }
-
-// }
-
-

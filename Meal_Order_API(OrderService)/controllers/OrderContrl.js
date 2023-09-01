@@ -3,57 +3,6 @@ const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
 
-async function createOrder(food) {
-    let totalPrice = 0
-    for(let t=0; t<food.length; t++){
-        totalPrice += food[t].price
-    }
-    const newOrder = await Order.create({
-        food, 
-        address : "userAddress", //correct this later to be the main user add
-        user: "userEmail", //correct this later to be the main user email
-        takeOut: true,
-        paymentOnDelivery: false,
-        totalPrice: 1000
-    })
-    return newOrder
-}
-
-function switchFood (food, foodToOrder,items, type, name){
-    switch (type) {
-        case "soup":
-            items = Object.values(food.soups)
-            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
-            break;
-        case "swallow":
-            items = Object.values(food.swallow)
-            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
-            break;
-        case "snacks":
-            items = Object.values(food.snacks)
-            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
-            break;
-        case "dish":
-            items = Object.values(food.dish)
-            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
-            break;
-        case "singleFood":
-            items = Object.values(food.singleFood)
-            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
-            break;
-        case "drinks":
-            items = Object.values(food.drinks)
-            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
-            break;
-        case "protien":
-            items = Object.values(food.protien)
-            foodToOrder = items.filter((food)=>food.name.toLowerCase() === name.toLowerCase())
-            break;
-        default:
-            break;
-    }
-}
-
 
 
 // place order from already sampled food ----incomplete route
@@ -62,19 +11,24 @@ const placeOrder = async(req, res)=>{
         await rabbitConnect().then((channel)=>{
             channel.consume("ORDER", data=>{
                 const {food} = JSON.parse(data.content)
+                const user = req.body.user
                 console.log('Consuming ORDER Queue')
-                // console.log(foodToOrder);
+                let totalPrice = 0
+                for(let i=0; i<food.length; i++){
+                    totalPrice += food[i].price
+                }
                 Order.create({
                     food,
                     address : "userAddress", //correct this later to be the main user add
-                    user: "userEmail", //correct this later to be the main user email
+                    user, //correct this later to be the main user email
                     takeOut: true,
                     paymentOnDelivery: false,
-                    totalPrice: 1000
-                }).then((data)=>{
+                    totalPrice
+                }).then((data)=>{ 
+                    console.log('Sending to PRODUCT Queue');
                     channel.sendToQueue("PRODUCT", Buffer.from(JSON.stringify({data})))
-                    console.log(data)
-                    return res.status(200).json({data})
+                    // console.log(req.user.email)
+                    // return res.status(200).json({data})
                 })
                 // send it to ORDER queue
                 channel.ack(data)
@@ -93,21 +47,6 @@ const placeOrder = async(req, res)=>{
     }
 }
 
-// get list of food that the restaurant has 
-const getFoods = async(req, res)=>{
-    try {
-        const {type} = req.query
-        const allFood = (await axios.get(`http://localhost:9601/meal-api/v1/food/get-food?type=${type}`)).data
-        if(!allFood){
-            res.status(200).send('There is no already prepared food at the moment')
-        }else{
-            return res.status(200).json(allFood)
-        }
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send('Internal Server Error  ' + error.message)
-    }
-}
 
 const getOrders = async(req, res)=>{
     try {
@@ -187,7 +126,6 @@ const deleteAllOrders = async(req, res)=>{
     }
 }
 
-
 // completed order route - a user should mark an order completed when they receive the order
 const receivedOrder = async (req, res) => {
     try {
@@ -213,25 +151,6 @@ const receivedOrder = async (req, res) => {
     }
 }
 
-
-
-// Routes for V1.2
-// get my most expensive order
-const sortOrder = async(req, res)=>{
-
-    try {
-        const orders = await Order.find()
-
-    } catch (error) {
-        
-    }
-}
-// get my orders from previous months
-// get my order from a particular restuarant
-// get a list of all restaurants, the food and their rating
-
-// completed order route
-// getFoods()
 module.exports = {
     getOrders, 
     getAnOrder,  
@@ -239,6 +158,39 @@ module.exports = {
     deleteOrder, 
     deleteAllOrders, 
     placeOrder, 
-    getFoods, 
     receivedOrder
 }
+
+// Routes for V1.2
+// get my most expensive order
+// const sortOrder = async(req, res)=>{
+
+//     try {
+//         const orders = await Order.find()
+
+//     } catch (error) {
+        
+//     }
+// }
+// get my orders from previous months
+// get my order from a particular restuarant
+// get a list of all restaurants, the food and their rating
+// completed order route
+// getFoods()
+
+// //I will find a way to call this function in the placeOrder
+// async function createOrder(food) {
+//     let totalPrice = 0
+//     for(let t=0; t<food.length; t++){
+//         totalPrice += food[t].price
+//     }
+//     const newOrder = await Order.create({
+//         food, 
+//         address : "userAddress", //correct this later to be the main user add
+//         user: req.user.email,
+//         takeOut: true,
+//         paymentOnDelivery: false,
+//         totalPrice: 1000
+//     })
+//     return newOrder
+// }
