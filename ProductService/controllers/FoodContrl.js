@@ -32,8 +32,6 @@ const buyFood =async(req, res)=>{
         }).then(()=>{
             axios.post("http://localhost:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
         })
-        // const trig = await axios.get("http://localhost:9600/meal-api/v1/order/placeOrder")
-        // console.log(trig.data);
 
         rabbitConnect().then((channel)=>{
             channel.consume("PRODUCT", (data)=>{
