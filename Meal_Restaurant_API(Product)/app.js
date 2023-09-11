@@ -17,7 +17,7 @@ app.use(express.json())
 //mounting routers
 app.use('/meal-api/v1/food/', FoodRouter)
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 9601
 app.listen(PORT, ()=>{
     console.log(`Product Service Server is running on ${PORT}`);
 })

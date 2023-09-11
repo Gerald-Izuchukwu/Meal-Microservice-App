@@ -19,7 +19,7 @@ app.use(express.json())
 app.use('/meal-api/v1/order/', OrderRouter)
 
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 9600
 app.listen(PORT, ()=>{
     console.log(`Order Service Server is running on ${PORT}`);
 })

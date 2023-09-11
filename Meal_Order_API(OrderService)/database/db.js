@@ -1,9 +1,11 @@
 const mongoose = require('mongoose')
-const Mongo_URI = process.env.MONGO_URI
+// const Mongo_URI_DEV = process.env.MONGO_URI
+const MONGO_URI_DEV = `mongodb://${process.env.MONGO_DB_USERNAME}:${process.env.MONGO_DB_PASSWORD}@mongodb:27017`
+
 
 const connectDB = async ()=>{
     try {
-        await mongoose.connect(Mongo_URI)
+        await mongoose.connect(MONGO_URI_DEV)
         console.log('database connected');
 
     } catch (error) {

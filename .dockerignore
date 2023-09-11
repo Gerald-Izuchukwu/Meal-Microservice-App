@@ -1,0 +1,14 @@
+node_modules
+config.env
+ideas
+isAuthenticated
+liscense
+README.md
+Meal_User_Service/node_modules
+Meal_Restaurant_API(Product)/node_modules
+Meal_Order_API(OrderService)/node_modules
+Meal_Order_API(OrderService)/config.env
+Meal_Restaurant_API(Product)/config.env
+Meal_User_Service/config.env
+Meal_Restaurant_API(Product)/ideas
+Meal_Order_API(OrderService)/ideas.js
