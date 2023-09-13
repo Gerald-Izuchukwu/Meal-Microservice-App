@@ -1,9 +1,8 @@
 const amqp = require('amqplib/callback_api')
-// `amqp://guest:guest@rabbitmq:5672`
-// const connectionString = process.env.RABBITMQ_CONNECTION_STRING
+// const amqpServer = `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@${process.env.RABBITMQ_DEFAULT_HOST}:${process.env.RABBITMQ_DEFAULT_PORT}`
 
 async function connect(){
-const amqpServer = `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@${process.env.RABBITMQ_DEFAULT_HOST}:${process.env.RABBITMQ_DEFAULT_PORT}`
+const amqpServer = process.env.RABBITMQ_CONNECTION_STRING
     return new Promise((resolve, reject)=>{
         amqp.connect(amqpServer, (connectionErr, connection)=>{
             if(connectionErr){

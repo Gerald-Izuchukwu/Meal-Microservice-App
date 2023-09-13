@@ -50,7 +50,8 @@ const placeOrder = async(req, res)=>{
 
 const getOrders = async(req, res)=>{
     try {
-        const orders = await Order.find()
+        const email = req.user.email
+        const orders = await Order.find({user: email})
         if(!orders){
             console.log('No orders found');
             return res.status(400).send('We couldnt find any order')
@@ -69,7 +70,11 @@ const getAnOrder = async (req, res)=>{
         const order = await Order.findById(id)
         if(!order){
             console.log('Couldnt find that order');
-            return res.status(400).send("No orderr found")
+            return res.status(400).send("No order found")
+        }
+        if(order.user !== req.user.email){
+            console.log('Order doesnt belong to the user');
+            return res.status(400).send("No order found")            
         }
         return res.status(200).json({order})
     } catch (error) {
@@ -79,7 +84,8 @@ const getAnOrder = async (req, res)=>{
 }
 
 
-// update an order
+// update an order - this route is just to showcase development skill, normally orders should not be edited after they are 
+// made, they can only be cancelled
 const updateOrder = async(req, res)=>{
     try {
         const orderId = req.params.id
@@ -87,6 +93,10 @@ const updateOrder = async(req, res)=>{
         if(!order){
             console.log('No such order');
             return res.status(400).send("Order doesnt exist")
+        }
+        if(order.user !== req.user.email){
+            console.log('Order doesnt belong to the user');
+            return res.status(400).send("No order found")            
         }
         const updatedOrder = await Order.findByIdAndUpdate(orderId, {$set: req.body}, {new: true})
         return res.status(201).json({
@@ -108,6 +118,10 @@ const deleteOrder = async(req, res)=>{
             console.log('Couldnt find that order');
             return res.status(400).send("No order found")
         }
+        if(order.user !== req.user.email){
+            console.log('Order doesnt belong to the user');
+            return res.status(400).send("No order found")            
+        }
         await Order.findByIdAndDelete(id)
         return res.status(200).send('Order has been deleted')
     } catch (error) {
@@ -118,7 +132,7 @@ const deleteOrder = async(req, res)=>{
 
 const deleteAllOrders = async(req, res)=>{
     try {
-        await Order.deleteMany()
+        await Order.deleteMany({user:req.user.email})
         return res.status(200).send('All Orders have been deleted')
     } catch (error) {
         console.log(error);

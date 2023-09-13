@@ -262,12 +262,47 @@ const getAFood = async (req, res) => {
 const updateFood = async(req, res)=>{
     try {
         const foodId = req.params.id
-        const food = await Food.findById(foodId)
+        const {type} = req.query
+        let food
+        let foodModel;
+
+        switch (type) {
+            case 'soups':
+                food = await Soup.findById(foodId);
+                foodModel = Soup
+                break;
+            case 'snacks':
+                food = await Snacks.findById(foodId);
+                foodModel= Snacks
+                break;
+            case 'swallow':
+                food = await Swallow.findById(foodId);
+                foodModel = Swallow
+                break;
+            case 'singleFood':
+                food = await SingleFood.findById(foodId);
+                foodModel = SingleFood
+                break;
+            case 'protien':
+                food = await Protien.findById(foodId);
+                foodModel = Protien
+                break;
+            case 'dish':
+                food = await Dish.findById(foodId);
+                foodModel = Dish
+                break;
+            case 'drinks':
+                food = await Drinks.findById(foodId);
+                foodModel = Drinks
+                break;
+            default:
+                return res.status(400).send('Invalid food type');
+        }
         if(!food){
             console.log('No such Food');
             return res.status(400).send("Food doesnt exist")
         }
-        const updatedFood = await Food.findByIdAndUpdate(foodId, {$set: req.body}, {new: true})
+        const updatedFood = await foodModel.findByIdAndUpdate(foodId, {$set: req.body}, {new: true})
         return res.status(201).json({
             msg: "Food Updated",
             Food: updatedFood
@@ -322,7 +357,6 @@ const deleteFood = async (req, res) => {
         return res.status(500).send('Internal Server Error ' + error.message);
     }
 };
-
 
 // get my most expensive food
 const mostExpensiveFood = async(req, res)=>{

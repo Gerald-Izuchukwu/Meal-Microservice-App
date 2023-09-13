@@ -17,4 +17,13 @@ async function isAuthenticated(req, res, next){
 
 }
 
-module.exports = isAuthenticated
+async function isAdmin(req, res, next){
+    if(!(req.user.role==='admin')){
+        return res.status(400).send("You are not authorized to access this route")
+    }else{
+        next()
+    }
+
+}
+
+module.exports = {isAuthenticated, isAdmin}
