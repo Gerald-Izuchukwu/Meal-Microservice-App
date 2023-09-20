@@ -15,7 +15,6 @@ app.use(express.json())
 //mounting routers
 app.use('/meal-api/v1/auth/', UserRouter)
 
-
 const PORT = process.env.PORT || 9602
 app.listen(PORT, ()=>{
     console.log(`User-Auth Service Server is running on ${PORT}`);

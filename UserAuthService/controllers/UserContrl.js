@@ -1,16 +1,50 @@
+// how do i call saveUser now?
+const dotenv = require('dotenv')
+dotenv.config({path: '../config.env'})
 const User = require('../models/UserModel')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-const secret = process.env.JWTSECRET_DEV
-// const {transporter, mailOptions} = require('../nodeMailer')
+const rabbitConnect = require('../rabbitConnect')
+const access_secret = process.env.JWT_ACCESS_TOKEN_SECRET_DEV
+const refresh_secret = process.env.JWT_REFRESH_TOKEN_SECRET_DEV
 const ses = require('../aws')
+const axios = require('axios').default
 
 // do this. create remove the saving of user from the register controller. create a fucntion-save user
 // once the user reisters, he receives a message and that user details is sent to a queue called user queue
 // once the user click on the confirm mail, which is a route, save user route consumes the USER queue and saves that data to db
 
-const createVerifyEmailIdentityCommand = (emailAddress)=>{
-    return ses.verifyEmailIdentity({ EmailAddress: emailAddress });
+
+const listIdentities = () =>{
+    return new Promise((resolve, reject)=>{
+        ses.listIdentities((err, data)=>{
+            if(err){
+                console.log(err)
+            }
+            resolve(data.Identities)
+        })
+    })
+
+}
+
+const checkVerifiedEmail = (emailAddress)=>{
+    return new Promise((resolve, reject)=>{
+        const params = {
+            Identities : [emailAddress]
+        }
+        ses.getIdentityVerificationAttributes(params, (err, data)=>{
+            if(err){
+                console.log(err)
+                reject(err)
+            }
+            const verificationAttributes = data.VerificationAttributes[emailAddress]
+            if(verificationAttributes.VerificationStatus === 'Success'){
+                resolve(true)
+            }else{
+                resolve(false)
+            }
+        })
+    })
 }
 
 
@@ -25,16 +59,83 @@ const register = async(req, res)=>{
         const user = {
             name, email, password
         }
-        const newUser = await User.create(user)
-        const verifyIdentityEmailCommand = createVerifyEmailIdentityCommand(email)
-        const verifiedEmail = await verifyIdentityEmailCommand.send()
+        await rabbitConnect().then((channel)=>{
+            channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
+            console.log('Sending user to USER queue');
+            return
+        })
+        const Identities = await listIdentities()
+        if(Identities.includes(email)){
+            console.log('yes1')
+            const verifiedEmail = await checkVerifiedEmail(email)
+            console.log('yes2')
+            if(!verifiedEmail){
+                console.log('yes3')
+                ses.verifyEmailIdentity({EmailAddress: email}).send()
+                console.log('yes4')
 
-        return res.status(201).json({msg: 'You have been registered successfully', newUser})
+                return res.status(200).send('A confirmation link has been sent to your email')
+            }else if(verifiedEmail){
+                console.log("email is verified")
+                return res.status(200).send('You are already registered and subscribed to this mailing service. Please log or use the forgot password route if you have forgotten your password. if you didnt register previously, please contact support')
+            }
+        }else{
+            ses.verifyEmailIdentity({EmailAddress: email}).send()
+            return res.status(200).send('A confirmation link has been sent to your email')
+        }
     }catch(error){
         console.log(error);
         return res.status(500).send('Internal server Error '+ error)
 
     }
+}
+
+const callSaveUser = (req, res)=>{
+    axios.post("http://localhost:9602/meal-api/v1/auth/saveuser")
+}
+
+const saveUser = async(req, res)=>{
+    try {
+
+        await rabbitConnect().then((channel)=>{
+            channel.consume("USER", (data)=>{
+                const {user} = JSON.parse(data.content)
+                console.log(user)
+                ses.listIdentities((err, data)=>{
+                    if(err){
+                        console.log(err)
+                        return
+                    }
+                    console.log(data.Identities)
+                    const {email} = user
+                    if(data.Identities.includes(email)){
+                        checkVerifiedEmail(email).then((data)=>{
+                            if(data === true){
+                                User.create(user)
+                                console.log(email)
+                                console.log('yes')
+                                return res.status(201).json({"msg":"User saved", user})
+                            }
+                            else if(data === false){
+                                channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
+                                console.log('Sending user back to USER queue since user isnt verified ');
+                                return
+                            }
+                        })
+
+
+                    }
+                })
+                channel.ack(data)
+                channel.close()
+                
+            })
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('Internal server Error '+ error)
+    }
+
 }
 
 const login = async(req, res)=>{
@@ -53,13 +154,22 @@ const login = async(req, res)=>{
             const payload = {
                 email, name:user.name, role: user.role
             }
-            jwt.sign(payload, secret, {expiresIn: '1h'}, (err, token)=>{
-                if(err){
-                    console.log(err);
-                    return res.status(400).send('there was an error signing you in')
+            const access_token = jwt.sign(payload, access_secret, {expiresIn: '10m'})
+            const refresh_token = jwt.sign({email}, refresh_secret, {expiresIn: '1d'})
+            res.cookie('jwt', refresh_token, { 
+                httpOnly: true, 
+                sameSite: 'None', secure: true, 
+                maxAge: 24 * 60 * 60 * 1000 
                 }
-                return res.status(200).json({token})
-            })
+            )
+            return res.status(200).json({access_token})
+            // const access_token = jwt.sign(payload, access_secret, {expiresIn: '1h'}, (err, token)=>{
+            //     if(err){
+            //         console.log(err);
+            //         return res.status(400).send('there was an error signing you in')
+            //     }
+            //     return res.status(200).json({token})
+            // })
         }
         
     } catch (error) {
@@ -159,7 +269,7 @@ const signOut = async(req, res)=>{
     // to blacklist token
 
 }
-module.exports = {register, login, getUserByID, resetPassword, updatePassword}
+module.exports = {register, saveUser, callSaveUser, login, getUserByID, resetPassword, updatePassword}
 
 // console.log(transporter.options.auth.user)
 

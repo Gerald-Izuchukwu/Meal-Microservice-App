@@ -3,3 +3,4 @@ config.env
 ideas.js
 .dockerignore
 nodemailer.js
+rabbitmq.config
