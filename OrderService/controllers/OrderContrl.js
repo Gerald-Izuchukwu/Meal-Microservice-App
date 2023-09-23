@@ -1,45 +1,70 @@
 const Order = require('../models/OrderModel')
+const Delivery = require('../../DeliveryService/models/Delivery')
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
+const calcDeliveryTime = (timestamp, hoursToAdd, minutesToAdd)=>{
+    const newDate = new Date(timestamp)
+    newDate.setHours(newDate.getHours() + hoursToAdd);
+    newDate.setMinutes(newDate.getMinutes() + minutesToAdd);
+    const dateAndTime = newDate.toISOString().split('.')[0]
+    // return dateAndTime.split('T')[1]
+    return dateAndTime.split('T').join(' ')
 
+}
 
 
 // place order from already sampled food ----incomplete route
 const placeOrder = async(req, res)=>{
     try {
+        const orderArray = []
         await rabbitConnect().then((channel)=>{
             channel.consume("ORDER", data=>{
-                const {food} = JSON.parse(data.content)
+                // const {food, timestamp} = JSON.parse(data.content.dataToSend)
+                const {dataToSend} = JSON.parse(data.content)
+                const {food, timestamp} = dataToSend
                 const user = req.body.user
+                const estimatedDeliveryTime = calcDeliveryTime(timestamp, 1, 45)
+                console.log(estimatedDeliveryTime)
                 console.log('Consuming ORDER Queue')
                 let totalPrice = 0
                 for(let i=0; i<food.length; i++){
                     totalPrice += food[i].price
                 }
-                Order.create({
+                const order = {
                     food,
                     address : "userAddress", //correct this later to be the main user add
                     user, //correct this later to be the main user email
                     takeOut: true,
                     paymentOnDelivery: false,
-                    totalPrice
-                }).then((data)=>{ 
+                    totalPrice,
+                    estimatedDeliveryTime : estimatedDeliveryTime.toString(),
+                    delivered: false,
+                    isCanceled: false,
+                    isAssigned: false,
+                    assignedTo: 'none'
+                }
+                orderArray.push(order)
+                Order.create(order).then((data)=>{ 
                     console.log('Sending to PRODUCT Queue');
                     channel.sendToQueue("PRODUCT", Buffer.from(JSON.stringify({data})))
-                    // console.log(req.user.email)
-                    // return res.status(200).json({data})
                 })
-                // send it to ORDER queue
+
                 channel.ack(data)
             })
             
             setTimeout(()=>{
                 channel.close()
-                // return res.status(200).json({foodToOrder})
             }, 2000)
         })
-        // const food = await axios.get("http://localhost:9601/meal-api/v1/food/")
+        await rabbitConnect().then((channel)=>{
+            const order = orderArray[0]
+            channel.sendToQueue('DELIVERY', Buffer.from(JSON.stringify({order})))
+            console.log('Sending To DELIVERY queue')
+        }).then(()=>{
+            axios.post("http://localhost:9603/meal-api/v1/delivery/deliverOrder")
+        })
+
     } catch (error) {
         console.log(error);
         return res.status(500).send('Internal Server Error ' + error.message)
@@ -165,6 +190,23 @@ const receivedOrder = async (req, res) => {
     }
 }
 
+const getPendingOrder = async(req, res)=>{
+    try {
+        const pendingOrder = await Order.find({delivered : false, isCanceled : false})
+        if(!pendingOrder){
+            console.log('No pending order at the moment')
+            return res.status(400).send("No Pending Order at the moment")
+        }
+        console.log(pendingOrder)
+        return res.status(200).json({msg: "Here are the pending orders", pendingOrder})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send('Internal Error ' + error.message)
+    }
+
+
+}
+
 module.exports = {
     getOrders, 
     getAnOrder,  
@@ -172,7 +214,8 @@ module.exports = {
     deleteOrder, 
     deleteAllOrders, 
     placeOrder, 
-    receivedOrder
+    receivedOrder,
+    getPendingOrder
 }
 
 // Routes for V1.2
