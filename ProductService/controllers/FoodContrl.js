@@ -24,9 +24,9 @@ const buyFood =async(req, res)=>{
             ...dish,
             ...drinks,
         ]
-
+        const dataToSend = {food, timestamp: Date.now()}
         await rabbitConnect().then((channel)=>{
-            channel.sendToQueue("ORDER", Buffer.from(JSON.stringify({food})))//later we add userEmail from req.user.email
+            channel.sendToQueue("ORDER", Buffer.from(JSON.stringify({dataToSend})))//later we add userEmail from req.user.email
             console.log("sending food to ORDER queue")
             return
         }).then(()=>{

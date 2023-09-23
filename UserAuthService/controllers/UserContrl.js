@@ -162,7 +162,7 @@ const login = async(req, res)=>{
                 maxAge: 24 * 60 * 60 * 1000 
                 }
             )
-            return res.status(200).json({access_token})
+            return res.status(200).json({access_token, payload})
             // const access_token = jwt.sign(payload, access_secret, {expiresIn: '1h'}, (err, token)=>{
             //     if(err){
             //         console.log(err);
@@ -265,11 +265,20 @@ const resetPassword = async(req, res)=>{
 // deactivate account
 //token refresh
 // signout route
-const signOut = async(req, res)=>{
-    // to blacklist token
-
+const signOut = (req, res) => {
+    if (req.session) {
+      req.session.destroy(err => {
+        if (err) {
+          res.status(400).send('Unable to log out')
+        } else {
+          res.send('Logout successful')
+        }
+      });
+    } else {
+      res.end()
+    }
 }
-module.exports = {register, saveUser, callSaveUser, login, getUserByID, resetPassword, updatePassword}
+module.exports = {register, saveUser, callSaveUser, login, getUserByID, resetPassword, updatePassword, signOut}
 
 // console.log(transporter.options.auth.user)
 

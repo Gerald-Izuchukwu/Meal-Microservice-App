@@ -1,5 +1,3 @@
-const dotenv = require('dotenv')
-dotenv.config({path: './config.env'})
 const jwt = require('jsonwebtoken')
 const secret = process.env.JWTSECRET
 async function isAuthenticated(req, res, next){
@@ -16,8 +14,22 @@ async function isAuthenticated(req, res, next){
             next()
         }
     } )
-
 }
 
+async function isAdmin(req, res, next){
+    if(!(req.user.role==='admin')){
+        return res.status(400).send("You are not authorized to access this route")
+    }else{
+        next()
+    }
+}
 
-module.exports = isAuthenticated
+async function isAgent(req, res, next){
+    if(!(req.user.role==='delivery-agent')){
+        return res.status(400).send("You are not authorized to access this route")
+    }else{
+        next()
+    }
+}
+
+module.exports = {isAuthenticated, isAdmin, isAgent}
