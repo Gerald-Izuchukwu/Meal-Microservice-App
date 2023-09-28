@@ -54,12 +54,8 @@ services:
       - mynetwork
     ports:
       - 9601:9601
-    environment:
-      - JWTSECRET=idreamitiworkhardigrindtilliownit
-      - RABBITMQ_DEFAULT_USER=jayy22
-      - RABBITMQ_DEFAULT_PASS=123456
-      - RABBITMQ_DEFAULT_HOST=rabbitmq
-      - RABBITMQ_DEFAULT_PORT=5672
+    env_file:
+      - ./config.env
 
 networks:
   mynetwork:

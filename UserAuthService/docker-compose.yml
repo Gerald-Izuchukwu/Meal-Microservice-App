@@ -1,8 +1,10 @@
-version: '3'
+version: '3' #set the env vars used here in the Dockerfile. so the services can connect
 services:
   mongodb:
     image: mongo:latest
     restart: always
+    networks:
+      - mynetwork
     ports:
       - 27017:27017
     environment:
@@ -12,6 +14,8 @@ services:
   mongo-express:
     image: mongo-express
     restart: always
+    networks:
+      - mynetwork
     ports:
       - 8080:8081
     environment:
@@ -20,14 +24,44 @@ services:
       - ME_CONFIG_MONGODB_SERVER=mongodb
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
 
+  rabbitmq:
+    image: rabbitmq:3.9-rc-management
+    restart: always
+    networks:
+      - mynetwork
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - "./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf"
+    env_file:
+      - rabbitmq.conf
+
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 20s
+      retries: 5
+
+
   user-auth-service:
     build: 
       # context: //path to specify to the src of a service when running multiple services
       dockerfile: Dockerfile
     restart: always
+    networks:
+      - mynetwork
     ports:
       - 9602:9602
-    environment:
-      - JWTSECRET=idreamitiworkhardigrindtilliownit
-      - MONGODB_CONNECTION_STRING=mongodb://mongodb:27017/USER-AUTH-Service
+    env_file:
+      - ./config.env
+    # secrets:
+    #   - mysecret
 
+networks:
+  mynetwork:
+    driver: bridge
+
+# secrets:
+#   mysecret:
+#     file: ./mysecret.txt

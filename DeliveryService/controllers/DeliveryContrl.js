@@ -14,7 +14,6 @@ const rabbitConnect = async()=>{
 }
 
 const getPendingOrder = async(req, res)=>{
-
     try {
         const pendingOrder = await Delivery.find({"Order.delivered" : false, "Order.isCanceled" : false})
         if(!pendingOrder){
@@ -27,8 +26,6 @@ const getPendingOrder = async(req, res)=>{
         console.log(error)
         return res.status(500).send('Internal Error ' + error.message)
     }
-
-
 }
 
 const acceptToDeliverOrder = async(req, res)=>{
@@ -52,7 +49,7 @@ const acceptToDeliverOrder = async(req, res)=>{
         return res.status(200).send('Order has been assigned to you. Deliver ASAP!')
     } catch (error) {
         console.log(error)
-        return res.status(500).send('Internal Server Error')
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
 
 }
@@ -82,7 +79,7 @@ const deliverOrder = async(req, res)=>{
         })
     } catch (error) {
         console.log(error)
-        return res.status(500).send('Internal Server Error')
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
 }
 
@@ -103,17 +100,12 @@ const deliveryComplete = async(req, res)=>{
             "Order.delivered": true,
             "Delivered": true
         }
-    
         const completedOrder = await Delivery.findByIdAndUpdate(id, {$set: body}, {new: true})
-    
         return res.status(200).send('Order Successfully Delivered')
     } catch (error) {
         console.log(error)
-        return res.status(500).send('Internal Server Error')
+        return res.status(500).send('Internal Server Error ' + error.message)
     }
-   
-
-
 }
 
 module.exports = { getPendingOrder, deliverOrder, deliveryComplete, acceptToDeliverOrder}

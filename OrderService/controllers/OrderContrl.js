@@ -1,5 +1,4 @@
 const Order = require('../models/OrderModel')
-const Delivery = require('../../DeliveryService/models/Delivery')
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
@@ -8,9 +7,7 @@ const calcDeliveryTime = (timestamp, hoursToAdd, minutesToAdd)=>{
     newDate.setHours(newDate.getHours() + hoursToAdd);
     newDate.setMinutes(newDate.getMinutes() + minutesToAdd);
     const dateAndTime = newDate.toISOString().split('.')[0]
-    // return dateAndTime.split('T')[1]
     return dateAndTime.split('T').join(' ')
-
 }
 
 
@@ -34,7 +31,7 @@ const placeOrder = async(req, res)=>{
                 const order = {
                     food,
                     address : "userAddress", //correct this later to be the main user add
-                    user, //correct this later to be the main user email
+                    user, 
                     takeOut: true,
                     paymentOnDelivery: false,
                     totalPrice,

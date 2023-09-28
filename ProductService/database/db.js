@@ -5,8 +5,8 @@ const MONGO_URI = `mongodb://${process.env.MONGO_DB_USERNAME}:${process.env.MONG
 
 const connectDB = async ()=>{
     try {
-        await mongoose.connect(MONGO_URI_DEV)
-        console.log(`database connected on ${MONGO_URI_DEV}`);
+        await mongoose.connect(MONGO_URI)
+        console.log(`database connected on ${MONGO_URI}`);
         
 
     } catch (error) {

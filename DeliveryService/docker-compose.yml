@@ -1,4 +1,4 @@
-version: '3'
+version: '3' #set the env vars used here in the Dockerfile. so the services can connect
 services:
   mongodb:
     image: mongo:latest
@@ -6,18 +6,18 @@ services:
     networks:
       - mynetwork
     ports:
-      - 27019:27017
+      - 27017:27017
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=example
-  
+
   mongo-express:
     image: mongo-express
     restart: always
     networks:
       - mynetwork
     ports:
-      - 8082:8081
+      - 8080:8081
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
       - ME_CONFIG_MONGODB_ADMINPASSWORD=example
@@ -30,8 +30,8 @@ services:
     networks:
       - mynetwork
     ports:
-      - 5674:5672
-      - 15674:15672
+      - 5672:5672
+      - 15672:15672
     volumes:
       - "./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf"
     env_file:
@@ -43,20 +43,26 @@ services:
       timeout: 20s
       retries: 5
 
-  order-service:
+
+
+  delivery-service:
     build: 
       # context: //path to specify to the src of a service when running multiple services
       dockerfile: Dockerfile
-    depends_on:
-      - rabbitmq
     restart: always
     networks:
       - mynetwork
     ports:
-      - 9600:9600
+      - 9603:9603
     env_file:
       - ./config.env
+    # secrets:
+    #   - mysecret
 
 networks:
   mynetwork:
     driver: bridge
+
+# secrets:
+#   mysecret:
+#     file: ./mysecret.txt
