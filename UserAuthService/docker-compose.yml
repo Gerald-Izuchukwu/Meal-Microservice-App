@@ -43,11 +43,15 @@ services:
       timeout: 20s
       retries: 5
 
-
   user-auth-service:
-    build: 
-      # context: //path to specify to the src of a service when running multiple services
-      dockerfile: Dockerfile
+    # build: 
+    #   # context: //path to specify to the src of a service when running multiple services
+    #   dockerfile: Dockerfile
+    image: mealapp-auth:latest
+    container_name: authservice
+    depends_on:
+      - rabbitmq
+      - mongodb
     restart: always
     networks:
       - mynetwork
@@ -55,13 +59,7 @@ services:
       - 9602:9602
     env_file:
       - ./config.env
-    # secrets:
-    #   - mysecret
 
 networks:
   mynetwork:
     driver: bridge
-
-# secrets:
-#   mysecret:
-#     file: ./mysecret.txt

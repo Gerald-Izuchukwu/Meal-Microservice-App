@@ -1,15 +1,15 @@
 FROM node:20-alpine
 
-ENV MONGO_DB_USERNAME=root\
-    MONGO_DB_PASSWORD=example
 
-RUN mkdir -p /home/orderService
+RUN mkdir -p /home/order-service
 
-COPY . /home/orderService
+WORKDIR /home/order-service
 
-WORKDIR /home/orderService
+ADD package*.json .
 
 RUN npm install
+
+COPY . .
 
 EXPOSE 9600
 

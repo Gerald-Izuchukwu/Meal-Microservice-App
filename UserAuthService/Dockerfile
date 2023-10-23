@@ -1,7 +1,5 @@
-FROM node:20-alpine
+FROM node:18-alpine
 
-ENV MONGO_DB_USERNAME=root\
-    MONGO_DB_PASSWORD=example
 
 RUN mkdir -p /home/user-auth-service
 

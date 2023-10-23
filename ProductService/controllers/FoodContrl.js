@@ -30,7 +30,7 @@ const buyFood =async(req, res)=>{
             console.log("sending food to ORDER queue")
             return
         }).then(()=>{
-            axios.post("http://localhost:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
+            axios.post("http://orderservice:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
         })
 
         rabbitConnect().then((channel)=>{

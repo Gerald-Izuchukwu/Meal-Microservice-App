@@ -59,7 +59,7 @@ const placeOrder = async(req, res)=>{
             channel.sendToQueue('DELIVERY', Buffer.from(JSON.stringify({order})))
             console.log('Sending To DELIVERY queue')
         }).then(()=>{
-            axios.post("http://localhost:9603/meal-api/v1/delivery/deliverOrder")
+            axios.post("http://deliveryservice:9603/meal-api/v1/delivery/deliverOrder")
         })
 
     } catch (error) {

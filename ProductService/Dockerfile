@@ -1,15 +1,14 @@
-FROM node:20-alpine
-
-ENV MONGO_DB_USERNAME=root\
-    MONGO_DB_PASSWORD=example
+FROM node:18-alpine
 
 RUN mkdir -p /home/product-service
 
-COPY . /home/product-service
-
 WORKDIR /home/product-service
 
+ADD package*.json .
+
 RUN npm install
+
+COPY . .
 
 EXPOSE 9601
 

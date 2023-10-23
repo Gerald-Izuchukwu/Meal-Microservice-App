@@ -7,6 +7,7 @@ const access_secret = process.env.JWT_ACCESS_TOKEN_SECRET_DEV
 const refresh_secret = process.env.JWT_REFRESH_TOKEN_SECRET_DEV
 const ses = require('../aws')
 const axios = require('axios').default
+// const {registerServiceWithAWS} = require('../services/authService.js')
 
 // do this. create remove the saving of user from the register controller. create a fucntion-save user
 // once the user reisters, he receives a message and that user details is sent to a queue called user queue
@@ -18,6 +19,7 @@ const listIdentities = () =>{
         ses.listIdentities((err, data)=>{
             if(err){
                 console.log(err)
+                reject(err)
             }
             resolve(data.Identities)
         })
@@ -45,17 +47,8 @@ const checkVerifiedEmail = (emailAddress)=>{
     })
 }
 
-// const successPage = (req, res)=>{
-//     res.render('confirmation', {message: 'A confirmation link has been sent to your email'})
-// }
-
-// // pages
-// const signUpPage = function(req, res){
-//     res.render("signUp")
-// }
-
 const register = async(req, res)=>{
-    try { //complete this route in such a way that it is only when a user verifies that the user is saved to db
+    try { 
         const {firstName, lastName, email, password} = req.body;
         const userExists = await User.findOne({email})
         if(userExists){
@@ -71,35 +64,54 @@ const register = async(req, res)=>{
             console.log('Sending user to USER queue');
             return
         })
-        const Identities = await listIdentities()
-        if(Identities.includes(email)){
-            const verifiedEmail = await checkVerifiedEmail(email)
-            if(!verifiedEmail){
-                ses.verifyEmailIdentity({EmailAddress: email}).send()
-                // return res.status(200).send('A confirmation link has been sent to your email')
-                return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/success')
-            }else if(verifiedEmail){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
-                console.log("email is verified")
-                await User.create(user) //incase something happens to our identity list
-                return res.redirect(200, '/loginPage')
+
+        const register = async(req, res)=>{
+            try { 
+                const {firstName, lastName, email, password} = req.body;
+                const userExists = await User.findOne({email})
+                if(userExists){
+                    console.log('This user exists');
+                    return res.status(400).send('This email is already registered, please log in')
+                }
+                const name = `${firstName} ${lastName}`
+                const user = {
+                    name, email, password
+                }
+                await rabbitConnect().then((channel)=>{
+                    channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
+                    console.log('Sending user to USER queue');
+                    return
+                })
+                const Identities = await listIdentities()
+                if(Identities.includes(email)){
+                    const verifiedEmail = await checkVerifiedEmail(email)
+                    if(!verifiedEmail){
+                        ses.verifyEmailIdentity({EmailAddress: email}).send()
+                        return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success')
+                    }else if(verifiedEmail){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
+                        console.log("email is verified")
+                        await User.create(user) //incase something happens to our identity list
+                        return res.redirect(200, '/loginPage')
+                    }
+                }else{
+                    ses.verifyEmailIdentity({EmailAddress: email}).send()
+                    // return res.status(200).send('A confirmation link has been sent to your email')
+                    return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success')
+                }
+            }catch(error){
+                console.log(error);
+                return res.status(500).send('Internal server Error '+ error)
             }
-        }else{
-            ses.verifyEmailIdentity({EmailAddress: email}).send()
-            // return res.status(200).send('A confirmation link has been sent to your email')
-            return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/success')
         }
+
     }catch(error){
         console.log(error);
         return res.status(500).send('Internal server Error '+ error)
-
     }
 }
 
-
-
-
 const callSaveUser = (req, res)=>{
-    axios.post("http://localhost:9602/meal-api/v1/auth/saveuser")
+    axios.post("http://authservice:9602/meal-api/v1/auth/saveuser")
 }
 
 const saveUser = async(req, res)=>{
@@ -251,7 +263,7 @@ const resetPassword = async(req, res)=>{
           },
           Body: {
             Text: {
-              Data: 'Hello from MealApp! This is a password reset link. Kindly follow the link to change your password. If you didnt request for this, please ignore '+ `http://localhost:9602/meal-api/v1/auth/updatepassword?id=${user.id}`,
+              Data: 'Hello from MealApp! This is a password reset link. Kindly follow the link to change your password. If you didnt request for this, please ignore '+ `http://authservice:9602/meal-api/v1/auth/updatepassword?id=${user.id}`,
             },
           },
         },

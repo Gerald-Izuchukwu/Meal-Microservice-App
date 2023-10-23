@@ -101,7 +101,7 @@ const deliveryComplete = async(req, res)=>{
             "Delivered": true
         }
         const completedOrder = await Delivery.findByIdAndUpdate(id, {$set: body}, {new: true})
-        return res.status(200).send('Order Successfully Delivered')
+        return res.status(200).send('Order Successfully Delivered' + completedOrder)
     } catch (error) {
         console.log(error)
         return res.status(500).send('Internal Server Error ' + error.message)

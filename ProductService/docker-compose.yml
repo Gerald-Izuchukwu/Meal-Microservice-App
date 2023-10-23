@@ -44,11 +44,13 @@ services:
       retries: 5
 
   product-service:
-    build: 
-      # context: //path to specify to the src of a service when running multiple services
-      dockerfile: Dockerfile
+    # build: 
+    #   # context: //path to specify to the src of a service when running multiple services
+    #   dockerfile: Dockerfile
+    image: gerald22/mealapp-product:1
     depends_on:
       - rabbitmq
+      - mongodb
     restart: always
     networks:
       - mynetwork

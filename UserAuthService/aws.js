@@ -1,5 +1,3 @@
-// const dotenv = require('dotenv')
-// dotenv.config({path: './config.env'})
 const AWS = require('aws-sdk')
 AWS.config.update({
     accessKeyId: process.env.AWS_AccessKeyID,
@@ -8,40 +6,39 @@ AWS.config.update({
 })
 
 const ses = new AWS.SES({region: process.env.AWS_Region})
-// const params = {
-//   Source: 'geraldlouisjnr8@gmail.com',
-//   Destination: {
-//     ToAddresses: ['jfof'],
-//   },
-//   Message: {
-//     Subject: {
-//       Data: 'Password Reset',
-//     },
-//     Body: {
-//       Text: {
-//         Data: 'Update password route',
-//       },
-//     },
-//   },
-// };
 
-// const createVerifyEmailIdentityCommand = (emailAddress)=>{
-//   return ses.verifyEmailAddress({EmailAddress: emailAddress})
-// }
+const listIdentities = () =>{
+    return new Promise((resolve, reject)=>{
+        ses.listIdentities((err, data)=>{
+            if(err){
+                console.log(err)
+                reject(err)
+            }
+            resolve(data.Identities)
+        })
+    })
+
+}
+
+const checkVerifiedEmail = (emailAddress)=>{
+    return new Promise((resolve, reject)=>{
+        const params = {
+            Identities : [emailAddress]
+        }
+        ses.getIdentityVerificationAttributes(params, (err, data)=>{
+            if(err){
+                console.log(err)
+                reject(err)
+            }
+            const verificationAttributes = data.VerificationAttributes[emailAddress]
+            if(verificationAttributes.VerificationStatus === 'Success'){
+                resolve(true)
+            }else{
+                resolve(false)
+            }
+        })
+    })
+}
 
 
-// ses.listIdentities((err, data)=>{
-//   if(err){
-//     console.log(err)
-//     return
-//   }else{
-//     console.log(data.Identities)
-//     return data.Identities
-
-//   }
-// })
-// console.log(typeof(listIdentity))
-
-
-module.exports = ses
-// console.log(params.Destination.ToAddresses)
+module.exports = {ses, listIdentities, checkVerifiedEmail}
