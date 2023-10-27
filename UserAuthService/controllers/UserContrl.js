@@ -5,9 +5,9 @@ const bcrypt = require('bcrypt')
 const rabbitConnect = require('../rabbitConnect')
 const access_secret = process.env.JWT_ACCESS_TOKEN_SECRET_DEV
 const refresh_secret = process.env.JWT_REFRESH_TOKEN_SECRET_DEV
-const ses = require('../aws')
+const ses = require('../utils/aws')
 const axios = require('axios').default
-// const {registerServiceWithAWS} = require('../services/authService.js')
+const {registerServiceWithAWS, registerServiceWithNodeMailer} = require('../services/authService.js')
 
 // do this. create remove the saving of user from the register controller. create a fucntion-save user
 // once the user reisters, he receives a message and that user details is sent to a queue called user queue
@@ -65,45 +65,20 @@ const register = async(req, res)=>{
             return
         })
 
-        const register = async(req, res)=>{
-            try { 
-                const {firstName, lastName, email, password} = req.body;
-                const userExists = await User.findOne({email})
-                if(userExists){
-                    console.log('This user exists');
-                    return res.status(400).send('This email is already registered, please log in')
-                }
-                const name = `${firstName} ${lastName}`
-                const user = {
-                    name, email, password
-                }
-                await rabbitConnect().then((channel)=>{
-                    channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
-                    console.log('Sending user to USER queue');
-                    return
-                })
-                const Identities = await listIdentities()
-                if(Identities.includes(email)){
-                    const verifiedEmail = await checkVerifiedEmail(email)
-                    if(!verifiedEmail){
-                        ses.verifyEmailIdentity({EmailAddress: email}).send()
-                        return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success')
-                    }else if(verifiedEmail){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
-                        console.log("email is verified")
-                        await User.create(user) //incase something happens to our identity list
-                        return res.redirect(200, '/loginPage')
-                    }
-                }else{
-                    ses.verifyEmailIdentity({EmailAddress: email}).send()
-                    // return res.status(200).send('A confirmation link has been sent to your email')
-                    return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success')
-                }
-            }catch(error){
-                console.log(error);
-                return res.status(500).send('Internal server Error '+ error)
+        // const result = await registerServiceWithAWS(user)
+        const result = await registerServiceWithNodeMailer(user)
+        console.log(result)
+        if(result.success){
+            if(result.emailVerificationRequired){
+                return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success')
+                // return res.status(200).send('A confirmation link has been sent to your email')
             }
+            else if(!(result.emailVerificationRequired)){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
+                return res.redirect(200, '/loginPage')
+            }
+        }else if(!(result.success)){
+            return res.status(400).send('There was an error')
         }
-
     }catch(error){
         console.log(error);
         return res.status(500).send('Internal server Error '+ error)
@@ -121,31 +96,32 @@ const saveUser = async(req, res)=>{
             channel.consume("USER", (data)=>{
                 const {user} = JSON.parse(data.content)
                 console.log(user)
-                ses.listIdentities((err, data)=>{
-                    if(err){
-                        console.log(err)
-                        return
-                    }
-                    console.log(data.Identities)
-                    const {email} = user
-                    if(data.Identities.includes(email)){
-                        checkVerifiedEmail(email).then((data)=>{
-                            if(data === true){
-                                User.create(user)
-                                console.log(email)
-                                console.log('yes')
-                                return res.status(201).json({"msg":"User saved", user})
-                            }
-                            else if(data === false){
-                                channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
-                                console.log('Sending user back to USER queue since user isnt verified ');
-                                return
-                            }
-                        })
+                User.create(user) //for aws, remove this line and uncomment the below code
+                // ses.listIdentities((err, data)=>{
+                //     if(err){
+                //         console.log(err)
+                //         return
+                //     }
+                //     console.log(data.Identities)
+                //     const {email} = user
+                //     if(data.Identities.includes(email)){
+                //         checkVerifiedEmail(email).then((data)=>{
+                //             if(data === true){
+                //                 User.create(user)
+                //                 console.log(email)
+                //                 console.log('yes')
+                //                 return res.status(201).json({"msg":"User saved", user})
+                //             }
+                //             else if(data === false){
+                //                 channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
+                //                 console.log('Sending user back to USER queue since user isnt verified ');
+                //                 return
+                //             }
+                //         })
 
 
-                    }
-                })
+                //     }
+                // })
                 channel.ack(data)
                 channel.close()
                 
@@ -304,3 +280,50 @@ module.exports = {
     updatePassword, signOut,
 }
 
+
+
+
+// // save user using aws----when i get my account back
+// const saveUser = async(req, res)=>{
+//     try {
+
+//         await rabbitConnect().then((channel)=>{
+//             channel.consume("USER", (data)=>{
+//                 const {user} = JSON.parse(data.content)
+//                 console.log(user)
+//                 ses.listIdentities((err, data)=>{
+//                     if(err){
+//                         console.log(err)
+//                         return
+//                     }
+//                     console.log(data.Identities)
+//                     const {email} = user
+//                     if(data.Identities.includes(email)){
+//                         checkVerifiedEmail(email).then((data)=>{
+//                             if(data === true){
+//                                 User.create(user)
+//                                 console.log(email)
+//                                 console.log('yes')
+//                                 return res.status(201).json({"msg":"User saved", user})
+//                             }
+//                             else if(data === false){
+//                                 channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
+//                                 console.log('Sending user back to USER queue since user isnt verified ');
+//                                 return
+//                             }
+//                         })
+
+
+//                     }
+//                 })
+//                 channel.ack(data)
+//                 channel.close()
+                
+//             })
+//         })
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).send('Internal server Error '+ error)
+//     }
+
+// }

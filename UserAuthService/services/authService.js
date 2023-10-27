@@ -1,5 +1,6 @@
-const {ses, listIdentities, checkVerifiedEmail} = require('../aws.js')
+const {ses, listIdentities, checkVerifiedEmail} = require('../utils/aws.js')
 const User = require('../models/UserModel.js')
+const {transporter, sendMailPromise} = require('../utils/nodemailer.js')
 
 const registerServiceWithAWS = (user)=>{
     return new Promise(async(resolve, reject)=>{
@@ -29,7 +30,28 @@ const registerServiceWithAWS = (user)=>{
 
 }
 
-module.exports = {registerServiceWithAWS}
+const registerServiceWithNodeMailer = (user)=>{
+    return new Promise(async(resolve, reject)=>{
+        try {
+            const {email} = user
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: email,
+                subject : 'MealApp Confirmation Mail',
+                text: 'You are receivng this mail because you registered on the MealApp Platform. If you did not initiate this action kindly ignore this message, else click here to verify http://authservice:9602/meal-api/v1/auth/saveuser'
+            }
+            const result = await sendMailPromise(mailOptions)
+            if(result){
+                resolve({success: true, emailVerificationRequired: true})
+            }
+        } catch (error) {
+            console.log(error)
+            reject(error)
+        }
+    })
+}
+
+module.exports = {registerServiceWithAWS, registerServiceWithNodeMailer}
 
 
 

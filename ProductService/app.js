@@ -2,6 +2,7 @@ const dotenv = require('dotenv')
 dotenv.config({path: './config.env'})
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 const connectDB = require('./database/db')
 const rabbitConnect = require('./rabbitConnect')
@@ -9,6 +10,9 @@ const FoodRouter = require('./routes/foodRoutes')
 connectDB()
 rabbitConnect()
 
+app.use(express.static('public'));
+app.set('view engine', 'ejs');
+app.use(cors())
 app.use(morgan('dev'))
 
 app.use(express.urlencoded({extended: false}))
