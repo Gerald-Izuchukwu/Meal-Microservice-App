@@ -21,7 +21,7 @@ const getPendingOrder = async(req, res)=>{
             return res.status(400).send("No Pending Order at the moment")
         }
         console.log(req.user)
-        return res.status(200).json({msg: "Here are the pending orders", pendingOrder})
+        return res.status(200).json({msg: "Here are the pending orders", pendingOrder}) // return just the name, phone number and address of order. Order contents should be hidden from the delivery agent
     } catch (error) {
         console.log(error)
         return res.status(500).send('Internal Error ' + error.message)
@@ -54,7 +54,7 @@ const acceptToDeliverOrder = async(req, res)=>{
 
 }
 
-const deliverOrder = async(req, res)=>{
+const deliverOrder = async(req, res)=>{ // saving order to database 
     try {
         rabbitConnect().then((channel)=>{
             channel.consume("DELIVERY", (data)=>{

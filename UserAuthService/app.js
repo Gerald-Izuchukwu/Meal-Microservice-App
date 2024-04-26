@@ -24,6 +24,7 @@ app.get('./', (res, req)=>{
 })
 
 const PORT = process.env.PORT || 9602
+const PORT2 = process.env.PORT2
 app.listen(PORT, ()=>{
-    console.log(`User-Auth Service Server is running on ${PORT}`);
+    console.log(`User-Auth Service Server is running on ${PORT}, also ${PORT2}`);
 })
