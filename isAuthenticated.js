@@ -1,6 +1,6 @@
 const dotenv = require('dotenv')
 dotenv.config({path: './config.env'})
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken")
 const secret = process.env.JWTSECRET
 async function isAuthenticated(req, res, next){
     // creating header to be "Bearer <token>", if its splited using space " ", then it becomes an array of two elem - Bearer and token
