@@ -49,13 +49,13 @@ const checkVerifiedEmail = (emailAddress)=>{
 
 const register = async(req, res)=>{
     try { 
-        const {firstName, lastName, email, password} = req.body;
+        const {name, email, password} = req.body;
+        // console.log(firstName, lastName, email)
         const userExists = await User.findOne({email})
         if(userExists){
             console.log('This user exists');
             return res.status(400).send('This email is already registered, please log in')
         }
-        const name = `${firstName} ${lastName}`
         const user = {
             name, email, password
         }
@@ -70,11 +70,14 @@ const register = async(req, res)=>{
         console.log(result)
         if(result.success){
             if(result.emailVerificationRequired){
-                return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success')
+                console.log(user)
+                return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/success') // for local dev
+                // return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success') // for container
                 // return res.status(200).send('A confirmation link has been sent to your email')
             }
             else if(!(result.emailVerificationRequired)){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
-                return res.redirect(200, '/loginPage')
+                return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/loginPage') // for local dev
+                // return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/loginPage') // for container
             }
         }else if(!(result.success)){
             return res.status(400).send('There was an error')
@@ -86,7 +89,8 @@ const register = async(req, res)=>{
 }
 
 const callSaveUser = (req, res)=>{
-    axios.post("http://authservice:9602/meal-api/v1/auth/saveuser")
+    axios.post("http://localhost:9602/meal-api/v1/auth/saveuser") //for local dev
+    // axios.post("http://authservice:9602/meal-api/v1/auth/saveuser") //for container
 }
 
 const saveUser = async(req, res)=>{
@@ -126,6 +130,7 @@ const saveUser = async(req, res)=>{
                 channel.close()
                 
             })
+            return res.send('User saved')
         })
     } catch (error) {
         console.log(error);
@@ -137,6 +142,7 @@ const saveUser = async(req, res)=>{
 const login = async(req, res)=>{
     try {
         const {email, password} = req.body
+        console.log(req.body)
         const user = await User.findOne({email}) 
         if(!user){
             console.log('user does not exist');
@@ -158,7 +164,11 @@ const login = async(req, res)=>{
                 maxAge: 24 * 60 * 60 * 1000 
                 }
             )
-            return res.status(200).json({access_token, payload})
+            // res.status(200).json({access_token, payload})
+            return res.redirect(200, 'http://localhost:9601/meal-api/v1/food/home-page') // for local development
+            // return res.redirect(200, 'http://productservice:9601/meal-api/v1/food/home-page') //for containers
+
+
             // const access_token = jwt.sign(payload, access_secret, {expiresIn: '1h'}, (err, token)=>{
             //     if(err){
             //         console.log(err);

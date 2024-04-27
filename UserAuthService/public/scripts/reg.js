@@ -35,11 +35,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const response = await axios.post(url, details)
             const message = response.data
             showFlashMessage(message, 'green')
+            // console.log(details)
             console.log(response)
             console.log(message)
-            if (response.status === 200 && response.headers.location) {
-                window.location.href = response.headers.location;
-            }
+            // if (response.status === 200 && response.headers.location) {
+            //     window.location.href = response.headers.location;
+            // }
         } catch (error) {
             if(error){
                 console.log(error)
@@ -53,9 +54,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
-
-   
-
 })
 
         // function clearFeilds() {
