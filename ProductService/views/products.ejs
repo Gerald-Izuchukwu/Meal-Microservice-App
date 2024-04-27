@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Registration Form</title>
+    <title>Products</title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
@@ -12,24 +12,22 @@
         </h1>
     </div>
     <div class="filter">
-        <form action="/action_page.php">
+        <form>
             <label for="foods">Choose a Food Type:</label>
             <select name="foods" id="foods">
-              <!-- <optgroup label="Swedish Cars"> -->
-                <option value="Soup">Soups</option>
-                <option value="Swallow">Swallow</option>
-              <!-- </optgroup> -->
-                <option value="SingleFood">SingleFood</option>
-                <option value="Snacks">Snacks</option>
-                <option value="Drinks">Drinks</option>
-                <option value="Protiens">Protiens</option>
-                <option value="Dishes">Dishes</option>
+                <option value="soups">Soups</option>
+                <option value="swallow">Swallow</option>
+                <option value="singleFood">SingleFood</option>
+                <option value="snacks">Snacks</option>
+                <option value="drinks">Drinks</option>
+                <option value="protiens">Protiens</option>
+                <option value="dishes">Dishes</option>
             </select>
             <br><br>
-            <input type="submit" value="Select">
+            <input type="submit" value="Select" id="select-button">
           </form>
     </div>
-    <div>
+    <!-- <div class ="food-list">
         <ul>
             <% food.forEach((item=>{%>
                 <li>
@@ -38,9 +36,9 @@
                 </li>
             <%}))%>
         </ul>
-    </div>
+    </div> -->
     <div class="buy-food">
-        <button>Buy Selected Food</button>
+        <button>Get All Food</button>
     </div>
     <script src="/scripts/main.js"></script>
   </body>
