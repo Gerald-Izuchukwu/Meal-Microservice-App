@@ -19,6 +19,10 @@ const SoupSchema= new mongoose.Schema({
     discount: {
         type: Boolean,
         default: false
+    },
+    image: {
+        type: String,
+        required: true
     }
 },{
     timestamps: true
@@ -44,6 +48,10 @@ const SwallowSchema = new mongoose.Schema({
     discount: {
         type: Boolean,
         default: false
+    },
+    image: {
+        type: String,
+        required: true
     }
 },{
     timestamps: true
@@ -68,6 +76,10 @@ const SnacksSchema = new mongoose.Schema({
     discount: {
         type: Boolean,
         default: false
+    },
+    image: {
+        type: String,
+        required: true
     }
 },{
     timestamps: true
@@ -93,6 +105,10 @@ const DrinksSchema = new mongoose.Schema({
     discount: {
         type: Boolean,
         default: false
+    },
+    image: {
+        type: String,
+        required: true
     }
 },{
     timestamps: true
@@ -118,6 +134,10 @@ const SingleFoodSchema = new mongoose.Schema({
     discount: {
         type: Boolean,
         default: false
+    },
+    image: {
+        type: String,
+        required: true
     }
 },{
     timestamps: true
@@ -142,6 +162,10 @@ const ProtienSchema = new mongoose.Schema({
     discount: {
         type: Boolean,
         default: false
+    },
+    image: {
+        type: String,
+        required: true
     }
 },{
     timestamps: true
@@ -170,8 +194,11 @@ const DishSchema = new mongoose.Schema({
     discount: {
         type: Boolean,
         default: false
+    },
+    image: {
+        type: String,
+        required: true
     }
-    //later we can seperate this to contain Dishes and Drinks
 },{
     timestamps: true
 })

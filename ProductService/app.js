@@ -7,6 +7,7 @@ const app = express()
 const connectDB = require('./database/db')
 const rabbitConnect = require('./rabbitConnect')
 const FoodRouter = require('./routes/foodRoutes')
+const session = require('express-session')
 connectDB()
 rabbitConnect()
 
@@ -17,6 +18,20 @@ app.use(morgan('dev'))
 
 app.use(express.urlencoded({extended: false}))
 app.use(express.json())
+
+app.use(session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false
+  }));
+
+app.use((req, res, next)=>{
+    res.locals.message = req.session.message;
+    delete req.session.message;
+    next()
+})
+
+app.use(express.static('uploads'))
 
 //mounting routers
 app.use('/meal-api/v1/food/', FoodRouter)

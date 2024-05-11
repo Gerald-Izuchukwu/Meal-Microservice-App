@@ -3,6 +3,23 @@ const {Soup, Swallow, SingleFood, Snacks, Drinks, Dish, Protien, Food} = require
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
+const multer = require('multer')
+
+// image upload
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./uploads")
+    
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname+"_"+Date.now()+"_"+file.originalname)
+        
+    }
+})
+
+const upload = multer({
+    storage: storage
+}).single('image')
 
 const buyFood =async(req, res)=>{
     try {
@@ -60,76 +77,113 @@ const buyFood =async(req, res)=>{
 
 const addFood = async(req, res)=>{
     try {
-        const {name, description, ofType, discount, soupPrice, swallowPrice, drinkPrice, protienPrice, snacksPrice, singleFoodPrice, dishPrice} = req.body
+        const {name, description, ofType, discount,  price} = req.body
+        const image = req.file.filename
         if(ofType === "Dish"){
-            if(!(name, description, dishPrice, ofType)){
+            if(!(name, description, price, ofType, image)){
                 return res.status(400).send('Please enter all required fields')
         
             }
             const newDish = await Dish.create({
-                name, description, dishPrice, discount
+                name, description, price, discount, image
             })
-            return res.status(201).json({msg: "Dish Saved", newDish})
+            res.session.message = {
+                type: "success",
+                message: "Food added"
+            }
+            res.redirect('http://localhost:9601/meal-api/v1/food/')
+            // return res.status(201).json({msg: "Dish Saved", newDish})
         }else if (ofType === "Soup"){
-            if(!(name,  soupPrice, ofType)){
+            if(!(name,  price, ofType)){
                 return res.status(400).send('Please enter all required fields')
         
+            }else{
+                const newSoup = new Soup({
+                    name,  price, image, ofType
+                })
+                const soup = await newSoup.save()
+                req.session.message = {
+                    type: "success",
+                    message: "Food added"
+                }
+                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
             }
-            const newSoup = new Soup({
-                name,  soupPrice, 
-            })
-            const soup = await newSoup.save()
-            return res.status(201).json({msg: "Soup Saved", soup})
+            // return res.status(201).json({msg: "Soup Saved", soup})
         }else if (ofType === "Swallow"){
-            if(!(name,  swallowPrice, ofType)){
+            if(!(name,  price, ofType)){
                 return res.status(400).send('Please enter all required fields')
         
             }
             const newSwallow = new Swallow({
-                name,  swallowPrice, 
+                name,  price, image, ofType
             })
             const swallow = await newSwallow.save()
-            return res.status(201).json({msg: "Swallow Saved", swallow})
+            res.session.message = {
+                type: "success",
+                message: "Food added"
+            }
+            res.redirect('http://localhost:9601/meal-api/v1/food/')
+            // return res.status(201).json({msg: "Swallow Saved", swallow})
         }else if (ofType === "SingleFood"){
-            if(!(name,  singleFoodPrice, ofType)){
+            if(!(name,  price, ofType)){
                 return res.status(400).send('Please enter all required fields')
         
             }
             const newSingleFood = new SingleFood({
-                name,  singleFoodPrice, 
+                name,  price, image, ofType
             })
             const singleFood = await newSingleFood.save()
-            return res.status(201).json({msg: "Food Saved", singleFood})
+            res.session.message = {
+                type: "success",
+                message: "Food added"
+            }
+            res.redirect('http://localhost:9601/meal-api/v1/food/')
+            // return res.status(201).json({msg: "Food Saved", singleFood})
         }else if (ofType === "Snacks"){
-            if(!(name,  snacksPrice, ofType)){
+            if(!(name,  price, ofType)){
                 return res.status(400).send('Please enter all required fields')
         
             }
             const newSnacks = new Snacks({
-                name,  snacksPrice, 
+                name,  price, image, ofType
             })
             const snacks = await newSnacks.save()
-            return res.status(201).json({msg: "Snacks Saved", snacks})
+            res.session.message = {
+                type: "success",
+                message: "Food added"
+            }
+            res.redirect('http://localhost:9601/meal-api/v1/food/')
+            // return res.status(201).json({msg: "Snacks Saved", snacks})
         }else if (ofType === "Protien"){
-            if(!(name,  protienPrice, ofType)){
+            if(!(name,  price, ofType)){
                 return res.status(400).send('Please enter all required fields')
         
             }
             const newProtien = new Protien({
-                name,  protienPrice, 
+                name,  price, image, ofType
             })
             const protien = await newProtien.save()
-            return res.status(201).json({msg: "Protien Saved", protien})
+            res.session.message = {
+                type: "success",
+                message: "Food added"
+            }
+            res.redirect('http://localhost:9601/meal-api/v1/food/')
+            // return res.status(201).json({msg: "Protien Saved", protien})
         }else if (ofType === "Drink"){
-            if(!(name,  drinkPrice, ofType)){
+            if(!(name,  price, ofType)){
                 return res.status(400).send('Please enter all required fields')
         
             }
             const newDrink = new Drinks({
-                name,  drinkPrice, 
+                name,  drinkPrice, image, ofType
             })
             const drink = await newDrink.save()
-            return res.status(201).json({msg: "Drink Saved", drink})
+            res.session.message = {
+                type: "success",
+                message: "Food added"
+            }
+            res.redirect('http://localhost:9601/meal-api/v1/food/')
+            // return res.status(201).json({msg: "Drink Saved", drink})
         }
 
     } catch (error) {
@@ -397,19 +451,22 @@ const mostExpensiveFood = async(req, res)=>{
                 break;
         }
         const mostExpensiveFood = foods.reduce((maxFood, currentFood) => {
-                if (!maxFood || currentFood.price > maxFood.price) {
+            if (!maxFood || currentFood.price > maxFood.price) {
                 return currentFood;
-                } else {
+            } else {
                 return maxFood;
-                }
-            }, 
-            null
-        )
+            }
+
+        }, null)
+        if(!mostExpensiveFood){
+            return res.send("NO food at the moment")
+        }
         return res.status(200).send(mostExpensiveFood)
 
     } catch (error) {
         console.log(error);
-        return res.status(500).send('Internal Server Error ' + error.message)
+        // return res.status(500).send('Internal Server Error ' + error.message)
+        return res.status(500).send('Internal Server Error ' + "Try later")
     }
 }
 
@@ -469,6 +526,7 @@ module.exports = {
     updateFood, 
     getDiscountedFood, 
     mostExpensiveFood,
+    upload
 }
 
 // routes for v1.2

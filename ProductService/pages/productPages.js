@@ -1,47 +1,26 @@
 const {Swallow, SingleFood, Soup, Dish, Drinks, Snacks, Protien} = require('../models/FoodModel')
+const axios = require('axios').default
 
-// const foodPage = (req, res)=>{
-//     res.render('food')
-// }
 
-const drinkPage = function(req, res){
-    res.render('drinks')
+const addFoodPage = function(req, res){
+    res.render('add-food', {title: "Add Food",})
 }
 
-const foodPage=async(req,res)=>{
-    const swallows = await Swallow.find()
+const productsPage = async function(req, res){
+    const singleFood = await SingleFood.find()
     const soups = await Soup.find()
-    const singleFoods = await SingleFood.find()
-    const dishes = await Dish.find()
-    const drinks = await Drinks.find()
-    const protiens = await Protien.find()
+    const swallow = await Swallow.find()
     const snacks = await Snacks.find()
-    const ff1 = swallows.map((swallow)=>{
-        return [swallow.name, swallow.price]
-    })
-    const ff2 = soups.map((soup)=>{
-        return [soup.name, soup.price]
-    })
-    const ff3 = singleFoods.map((singleFood)=>{
-        return [singleFood.name, singleFood.price]
-    })
-    const food = [
-        // ff1,
-        // ff2,
-        // ff3
-        ...singleFoods,
-        ...swallows,
-        ...soups,
-        ...dishes,
-        ...drinks,
-        ...protiens,
-        ...snacks,
-    ]
-    res.render('products', {food})
-    console.log(food);
+    const dish = await Dish.find()
+    const protien = await Protien.find()
+    const drinks = await Drinks.find()
+    const food = [...soups, ...swallow, ...singleFood, ...snacks, ...drinks, ...dish, ...protien]
+
+    res.render('index', {title: "ProductsPage", food})
 }
+
 
 module.exports = {
-    foodPage,
-    drinkPage,
+    addFoodPage,
+    productsPage
 }

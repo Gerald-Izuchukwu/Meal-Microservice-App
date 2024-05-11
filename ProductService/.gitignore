@@ -3,3 +3,4 @@ config.env
 utils/
 ideas
 .dockerignore
+uploads/
