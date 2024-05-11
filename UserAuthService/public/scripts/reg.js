@@ -38,9 +38,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(details)
             console.log(response)
             console.log(message)
-            // if (response.status === 200 && response.headers.location) {
-            //     window.location.href = response.headers.location;
-            // }
+            if (response.status === 200 && response.headers.location) {
+                window.location.href = response.headers.location;
+            }
         } catch (error) {
             if(error){
                 console.log(error)

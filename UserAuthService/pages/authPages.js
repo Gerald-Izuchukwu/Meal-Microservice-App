@@ -3,15 +3,20 @@ const successPage = (req, res)=>{
 }
 
 const signUpPage = function(req, res){
-    res.render("signUp")
+    res.render("signUp", {title: "SignUp Page"})
 }
 
 const loginPage = function(req, res){
     res.render('login')
 }
 
+const tryPage = function(req, res){
+    res.render('index', {title:"Hi JS"})
+}
+
 module.exports = {
     successPage,
     signUpPage,
-    loginPage
+    loginPage,
+    tryPage
 }

@@ -18,6 +18,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const response = await axios.post(url, details)
             console.log(response)
             console.log('Success')
+            if (response.status === 200 && response.headers.location) {
+                window.location.href = response.headers.location;
+            }
         } catch (error) {
             if(error){
                 console.log(error);

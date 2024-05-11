@@ -6,9 +6,10 @@ const {
     getUserByID, signOut, 
 } = require('../controllers/UserContrl')
 
-const {signUpPage, successPage, loginPage} = require('../pages/authPages')
+const {signUpPage, successPage, loginPage, tryPage} = require('../pages/authPages')
 
 router.route("/success").get(successPage)
+router.route('/psi').get(tryPage)
 router.route('/register').post(register).get(signUpPage)
 router.route('/saveuser').post(saveUser).get(callSaveUser)
 router.route('/login').post(login).get(loginPage)
