@@ -1,0 +1,86 @@
+<%- include('layout/header') %>
+
+<div class="container">
+    <div class="row">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mx-auto mt-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-success">
+                            <h5 class="text-light">Edit Food(<%= food.name%>) </h5>
+                        </div>
+                        <div class="card-body p-4">
+
+                            <form action="http://localhost:9601/meal-api/v1/food/edit/<%food._id  %>" method="post"  id="add-form" enctype="multipart/form-data">
+                                <!-- <input type="hidden" name="_method" value="PUT"> -->
+                                <input type="hidden" name="_method" value="PUT">
+                                <div class="mb-3">
+                                    <label for="type"></label>
+                                    <select name="ofType" class="form-control form-control-lg" value="<%= food.type  %>" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Soup">Soup</option>
+                                        <option value="Swallow">Swallow</option>
+                                        <option value="SingleFood">SingleFood</option>
+                                        <option value="Protien">Protien</option>
+                                        <option value="Snacks">Snacks</option>
+                                        <option value="Drinks">Drinks</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="name">Name</label>
+                                    <input type="text" name="name" class="form-control form-control-lg" placeholder="Enter Name" value="<%= food.name  %>" required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="price">Price</label>
+                                    <input type="number" name="price" class="form-control form-control-lg" placeholder="Enter price" value="<%= food.price  %>"required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="discount">Discount</label>
+                                    <input type="number" name="discount" class="form-control form-control-lg" placeholder="Enter discount" value="<%= food.discount  %>" required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="desc">Description</label>
+                                    <input type="text" name="desc" class="form-control form-control-lg" placeholder="Enter Description" value="<%= food.description  %>" required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Select Image</label>
+                                    <input type="file" name="image" class="form-control form-control-lg" required/>
+                                    <img src="<%= food.image %>" width="100" class="img-thumbnail mt-1">
+                                </div>
+                                <input type="hidden" name="old_image" value="<%= food.image  %>">
+                                <div class="mb-3">
+                                    <input type="submit" name="submit" value="Update Food" class="btn btn-success btn-lg" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <script>
+    function submitForm() {
+        const formData = new FormData(document.getElementById('add-form'))
+        axios.put("http://localhost:9601/meal-api/v1/food/edit/:<%= food.id%>?type=<%= food.type%>", formData)  
+    }
+</script> -->
+
+<!-- <script>
+    function submitForm() {
+        const formData = new FormData(document.getElementById('add-form'));
+        fetch("http://localhost:9601/meal-api/v1/food/edit/:<%= food.id%>", {
+            method: 'PUT',
+            body: formData
+        }).then(response => {
+            // Handle response
+        }).catch(error => {
+            // Handle error
+        });
+    }
+</script> -->
+
+<%- include('layout/footer') %>
+
+

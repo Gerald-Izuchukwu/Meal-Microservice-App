@@ -11,7 +11,7 @@
             <%} %>
             <div class="table-responsive">
                 <% if (food != '') { %>
-                    <table class="table table-striped text-center">
+                    <table class="table table-striped text-center mt-3">
                         <thead>
                             <tr class="table-dark">
                                 <th>ID</th>
@@ -26,22 +26,23 @@
                         <tbody>
                             <% food.forEach((row, index) => { %>
                                 <tr>
-                                    <td><%= index %></td> <!-- Corrected: Added <%= %> around index -->
+                                    <td><%= index %></td> 
                                     <td><img src="<%= row.image %>" width="50" class="img-thumbnail"></td>
                                     <td><%= row.name %></td>
                                     <td><%= row.ofType %></td>
                                     <td><%= row.price %></td>
                                     <td><%= row.discount %></td>
                                     <td>
-                                        <a href="/edit/<%= row._id %>" class="text-success"><i class="fas fa-edit fa-lg mx-1"></i></a>
-                                        <a href="/edit/<%= row._id %>" class="text-danger"><i class="fas fa-trash fa-lg mx-1"></i></a>
+                                        <a href="http://localhost:9601/meal-api/v1/food/add-to-cart/<%= row._id %>" class="text-success"><i class="fas fa-plus-circle fa-lg mx-1"></i></a>
+                                        <a href="http://localhost:9601/meal-api/v1/food/edit/<%= row._id %>" class="text-success"><i class="fas fa-edit fa-lg mx-1"></i></a>
+                                        <a href="http://localhost:9601/meal-api/v1/food/delete/<%= row._id %>" class="text-danger"><i class="fas fa-trash fa-lg mx-1"></i></a>
                                     </td>
                                 </tr>
-                            <% }) %> <!-- Corrected: Added space before %>-->
+                            <% }) %> 
                         </tbody>
                     </table>
                 <% } else { %>
-                    <h1 class="text-center text-secondary mt-5">No Food Currently Available</h1> <!-- Adjusted message -->
+                    <h1 class="text-center text-secondary mt-5">No Food Currently Available</h1> 
                 <% } %>
                 
             </div>

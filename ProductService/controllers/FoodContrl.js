@@ -1,5 +1,6 @@
 // const Food = require('../models/FoodModel')
-const {Soup, Swallow, SingleFood, Snacks, Drinks, Dish, Protien, Food} = require('../models/FoodModel')
+const fs = require('fs')
+const {Soup, Swallow, SingleFood, Snacks, Drinks, Dish, Protien, Food, Cart} = require('../models/FoodModel')
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
@@ -77,10 +78,14 @@ const buyFood =async(req, res)=>{
 
 const addFood = async(req, res)=>{
     try {
-        const {name, description, ofType, discount,  price} = req.body
+        console.log('1')
+        const {name, description, type, discount,  price} = req.body
+        console.log(req.body);
         const image = req.file.filename
-        if(ofType === "Dish"){
-            if(!(name, description, price, ofType, image)){
+        console.log('11')
+
+        if(type === "Dish"){
+            if(!(name, description, price, type, image)){
                 return res.status(400).send('Please enter all required fields')
         
             }
@@ -93,13 +98,13 @@ const addFood = async(req, res)=>{
             }
             res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Dish Saved", newDish})
-        }else if (ofType === "Soup"){
-            if(!(name,  price, ofType)){
+        }else if (type === "Soup"){
+            if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
         
             }else{
                 const newSoup = new Soup({
-                    name,  price, image, ofType
+                    name,  price, image, type
                 })
                 const soup = await newSoup.save()
                 req.session.message = {
@@ -109,80 +114,91 @@ const addFood = async(req, res)=>{
                 res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
             }
             // return res.status(201).json({msg: "Soup Saved", soup})
-        }else if (ofType === "Swallow"){
-            if(!(name,  price, ofType)){
+        }else if (type === "Swallow"){
+            if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
         
+            }else{
+                const newSwallow = new Swallow({
+                    name,  price, image, type
+                })
+                const swallow = await newSwallow.save()
+                req.session.message = {
+                    type: "success",
+                    message: "Food added"
+                }
+                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
             }
-            const newSwallow = new Swallow({
-                name,  price, image, ofType
-            })
-            const swallow = await newSwallow.save()
-            res.session.message = {
-                type: "success",
-                message: "Food added"
-            }
-            res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Swallow Saved", swallow})
-        }else if (ofType === "SingleFood"){
-            if(!(name,  price, ofType)){
+        }else if (type === "SingleFood"){
+            if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
         
+            } else{
+                const newSingleFood = new SingleFood({
+                    name,  price, image, type
+                })
+                const singleFood = await newSingleFood.save()
+                req.session.message = {
+                    type: "success",
+                    message: "Food added"
+                }
+                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
+
             }
-            const newSingleFood = new SingleFood({
-                name,  price, image, ofType
-            })
-            const singleFood = await newSingleFood.save()
-            res.session.message = {
-                type: "success",
-                message: "Food added"
-            }
-            res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Food Saved", singleFood})
-        }else if (ofType === "Snacks"){
-            if(!(name,  price, ofType)){
+        }else if (type === "Snack"){
+            if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
         
+            }else{
+                const newSnacks = new Snacks({
+                    name,  price, image, type
+                })
+                const snacks = await newSnacks.save()
+                req.session.message = {
+                    type: "success",
+                    message: "Food added"
+                }
+                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
             }
-            const newSnacks = new Snacks({
-                name,  price, image, ofType
-            })
-            const snacks = await newSnacks.save()
+
             res.session.message = {
                 type: "success",
                 message: "Food added"
             }
             res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Snacks Saved", snacks})
-        }else if (ofType === "Protien"){
-            if(!(name,  price, ofType)){
+        }else if (type === "Protien"){
+            if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
         
+            }else{
+                const newProtien = new Protien({
+                    name,  price, image, type
+                })
+                const protien = await newProtien.save()
+                req.session.message = {
+                    type: "success",
+                    message: "Food added"
+                }
+                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
             }
-            const newProtien = new Protien({
-                name,  price, image, ofType
-            })
-            const protien = await newProtien.save()
-            res.session.message = {
-                type: "success",
-                message: "Food added"
-            }
-            res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Protien Saved", protien})
-        }else if (ofType === "Drink"){
-            if(!(name,  price, ofType)){
+        }else if (type === "Drink"){
+            if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
-        
+            }else{
+                const newDrink = new Drinks({
+                    name,  price, image, type
+                })
+                const drink = await newDrink.save()
+                req.session.message = {
+                    type: "success",
+                    message: "Drink added"
+                }
+                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
             }
-            const newDrink = new Drinks({
-                name,  drinkPrice, image, ofType
-            })
-            const drink = await newDrink.save()
-            res.session.message = {
-                type: "success",
-                message: "Food added"
-            }
-            res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Drink Saved", drink})
         }
 
@@ -191,6 +207,22 @@ const addFood = async(req, res)=>{
         return res.status(500).send('Internal Server Error ' + error.message)
     }
 
+}
+
+const addToCart = async(req, res)=>{
+    try {
+        const user_id = req.user
+        const ids = req.body.ids
+        if(!ids){
+            return res.send('No items to add to Cart')
+        }else{
+            const newCart = new Cart({user_id, ids})
+            const cart = await newCart.save()
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('Internal Server Error ' + error.message)  
+    }
 }
 
 const getFood = async(req, res)=>{
@@ -318,9 +350,12 @@ const getAFood = async (req, res) => {
 const updateFood = async(req, res)=>{
     try {
         const foodId = req.params.id
-        const {type} = req.query
+        // const {type} = req.query
+        const type = req.body.type
         let food
         let foodModel;
+        // console.log(req.body)
+        // console.log(req.params.id)
 
         switch (type) {
             case 'soups':
@@ -371,7 +406,8 @@ const updateFood = async(req, res)=>{
 // delete this food
 const deleteFood = async (req, res) => {
     try {
-        const { type, id } = req.params;
+        const { id } = req.params;
+        const type= req.body.type
         let foodModel;
 
         switch (type) {
@@ -406,8 +442,16 @@ const deleteFood = async (req, res) => {
             console.log(`Couldn't find that ${type}`);
             return res.status(400).send(`No ${type} found`);
         }
+        if(food.image != ''){
+            fs.unlinkSync('./uploads/'+ food.image)
+        }
+        req.session.message = {
+            type: "success",
+            message: "Food Deleted"
+        }
+        res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
 
-        return res.status(200).json({ food });
+        // return res.status(200).json({ food });
     } catch (error) {
         console.log(error);
         return res.status(500).send('Internal Server Error ' + error.message);
@@ -521,6 +565,7 @@ module.exports = {
     getAFood, 
     buyFood,
     getFood,
+    addToCart,
     getFoodBasedOnType, 
     deleteFood, 
     updateFood, 

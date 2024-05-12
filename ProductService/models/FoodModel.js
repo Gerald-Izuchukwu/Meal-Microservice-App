@@ -6,7 +6,7 @@ const SoupSchema= new mongoose.Schema({
         required: true,
         enum: ['Afang', "Edikaikong", "Egwusi", "White", "Eforiro", "Banga", "Bitterleaf", "Ogbono", "Oha", "Okro", "Pepper-Soup"]
     },
-    ofType: {
+    type: {
         type: String,
         enum : ["Soup"]
     },
@@ -36,7 +36,7 @@ const SwallowSchema = new mongoose.Schema({
 
     },
 
-    ofType: {
+    type: {
         type: String,
         enum : ["Swallow"]
     },
@@ -63,7 +63,7 @@ const SnacksSchema = new mongoose.Schema({
         required: true,
         enum: ["Meshai", "Shawarma", "Fruit-Salad", "Small-Chops"]
     },
-    ofType: {
+    type: {
         type: String,
         enum : ["Snacks"]
     },
@@ -92,7 +92,7 @@ const DrinksSchema = new mongoose.Schema({
         // enum: []
     },
 
-    ofType: {
+    type: {
         type: String,
         enum : ["Drink"]
     },
@@ -121,7 +121,7 @@ const SingleFoodSchema = new mongoose.Schema({
         enum: ['Rice', 'Beans', "Yam"]
     },
 
-    ofType: {
+    type: {
         type: String,
         enum : ["SingleFood"]
     },
@@ -149,7 +149,7 @@ const ProtienSchema = new mongoose.Schema({
         enum: ["Beef", "Fish", "Chicken", "Turkey" ]
     },
 
-    ofType: {
+    type: {
         type: String,
         enum : ["Protien"]
     },
@@ -177,7 +177,7 @@ const DishSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    ofType: {
+    type: {
         type: String,
         enum : ["Dish"]
     },
@@ -213,6 +213,17 @@ const FoodSchema = new mongoose.Schema({
 },{
     timestamps: true
 })
+const CartSchema = new mongoose.Schema({
+    name:{
+        type: String,
+        required: true,
+        unique: true
+    },
+    cart:{
+        type: Array,
+        required: true
+    }
+})
 
 
 const Soup = mongoose.model('Soups', SoupSchema )
@@ -223,4 +234,5 @@ const Dish = mongoose.model('Dishes', DishSchema )
 const SingleFood = mongoose.model('SingleFood', SingleFoodSchema )
 const Protien = mongoose.model('Protiens', ProtienSchema)
 const Food = mongoose.model('Food', FoodSchema)
-module.exports = {Soup, Swallow, Snacks, Drinks, Dish, SingleFood, Protien, Food}
+const Cart = mongoose.model('Cart', CartSchema)
+module.exports = {Soup, Swallow, Snacks, Drinks, Dish, SingleFood, Protien, Food, Cart}

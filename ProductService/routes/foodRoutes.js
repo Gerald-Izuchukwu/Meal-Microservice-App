@@ -5,15 +5,16 @@ const {
     getAFood, 
     getFood, 
     buyFood,
+    addToCart,
     getFoodBasedOnType,
     deleteFood, 
     updateFood, 
     getDiscountedFood,
     mostExpensiveFood,
-    upload
+    upload,
 } = require('../controllers/FoodContrl')
 // const {isAdmin, isAuthenticated} = require('../isAuthenticated')
-const {addFoodPage,  productsPage} = require('../pages/productPages')
+const {addFoodPage,  productsPage, editFoodPage, deleteFoodPage, addToCartPage} = require('../pages/productPages')
 
 // router.route('/buy-food').post(isAuthenticated, buyFood)
 router.route('/get-food').get( getFood)
@@ -23,5 +24,10 @@ router.route('/get-food-type').get( getFoodBasedOnType)
 router.route('/add-food').post(upload, addFood).get(addFoodPage)
 router.route('/discountedFoods').get(getDiscountedFood)
 router.route('/mostExpensiveFood').get(mostExpensiveFood)
+router.route("/add-to-cart/:id").get(addToCartPage).post(addToCart)
 // router.route("/:id").get(isAuthenticated, getAFood).delete(isAuthenticated, isAdmin, deleteFood).put(isAuthenticated,isAdmin,updateFood)
+// router.route("/:id").get( getAFood).delete( deleteFood).put(updateFood)
+router.route("/edit/:id").get(editFoodPage).put(updateFood)
+// router.route("/delete/:id").get(deleteFoodPage).post(deleteFood)
+router.route("/delete/:id").get(deleteFoodPage).delete(deleteFood)
 module.exports = router
