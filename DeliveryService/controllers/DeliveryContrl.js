@@ -21,7 +21,7 @@ const getPendingOrder = async(req, res)=>{
             return res.status(400).send("No Pending Order at the moment")
         }
         console.log(req.user)
-        return res.status(200).json({msg: "Here are the pending orders", pendingOrder}) // return just the name, phone number and address of order. Order contents should be hidden from the delivery agent
+        return res.status(200).json({msg: "Here are the pending orders", count: pendingOrder.length, pendingOrder}) // return just the name, phone number and address of order. Order contents should be hidden from the delivery agent
     } catch (error) {
         console.log(error)
         return res.status(500).send('Internal Error ' + error.message)
@@ -71,12 +71,14 @@ const deliverOrder = async(req, res)=>{ // saving order to database
                 }
                 Delivery.create(delivery)
                 console.log('Delivery Saved to Database')
+                res.status(201).json({msg: "delivery saved", delivery})
                 channel.ack(data)
             })
             setTimeout(()=>{
                 channel.close()
             }, 4000)
         })
+        // res.status(201).json({msg: "delivery saved", delivery})
     } catch (error) {
         console.log(error)
         return res.status(500).send('Internal Server Error ' + error.message)
@@ -101,7 +103,7 @@ const deliveryComplete = async(req, res)=>{
             "Delivered": true
         }
         const completedOrder = await Delivery.findByIdAndUpdate(id, {$set: body}, {new: true})
-        return res.status(200).send('Order Successfully Delivered' + completedOrder)
+        return res.status(200).json({msg:'Order Successfully Delivered', completedOrder})
     } catch (error) {
         console.log(error)
         return res.status(500).send('Internal Server Error ' + error.message)

@@ -7,7 +7,7 @@ const access_secret = process.env.JWT_ACCESS_TOKEN_SECRET_DEV
 const refresh_secret = process.env.JWT_REFRESH_TOKEN_SECRET_DEV
 const ses = require('../utils/aws')
 const axios = require('axios').default
-const {registerServiceWithAWS, registerServiceWithNodeMailer} = require('../services/authService.js')
+const {registerServiceWithAWS, registerServiceWithNodeMailer, resetPasswordWithNodemailer} = require('../services/authService.js')
 
 // do this. create remove the saving of user from the register controller. create a fucntion-save user
 // once the user reisters, he receives a message and that user details is sent to a queue called user queue
@@ -49,15 +49,14 @@ const checkVerifiedEmail = (emailAddress)=>{
 
 const register = async(req, res)=>{
     try { 
-        const {name, email, password} = req.body;
-        // console.log(firstName, lastName, email)
+        const {name, email, role, password} = req.body;
         const userExists = await User.findOne({email})
         if(userExists){
             console.log('This user exists');
             return res.status(400).send('This email is already registered, please log in')
         }
         const user = {
-            name, email, password
+            name, email, role, password
         }
         await rabbitConnect().then((channel)=>{
             channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
@@ -71,16 +70,17 @@ const register = async(req, res)=>{
         if(result.success){
             if(result.emailVerificationRequired){
                 console.log(user)
-                return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/success') // for local dev
+                // return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/success') // for local dev
                 // return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success') // for container
-                // return res.status(200).send('A confirmation link has been sent to your email')
+                return res.status(200).send('A confirmation link has been sent to your email')
             }
             else if(!(result.emailVerificationRequired)){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
-                return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/loginPage') // for local dev
+                // return res.redirect(200, 'http://localhost:9602/meal-api/v1/auth/loginPage') // for local dev
                 // return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/loginPage') // for container
+                return res.status(200).send('A confirmation link has been sent to your email')
             }
         }else if(!(result.success)){
-            return res.status(400).send('There was an error')
+            return res.status(400).send('There was an error in creating this user')
         }
     }catch(error){
         console.log(error);
@@ -100,7 +100,7 @@ const saveUser = async(req, res)=>{
             channel.consume("USER", (data)=>{
                 const {user} = JSON.parse(data.content)
                 console.log(user)
-                User.create(user) //for aws, remove this line and uncomment the below code
+                User.create(user) //using aws, remove this line and uncomment the below code
                 // ses.listIdentities((err, data)=>{
                 //     if(err){
                 //         console.log(err)
@@ -164,18 +164,9 @@ const login = async(req, res)=>{
                 maxAge: 24 * 60 * 60 * 1000 
                 }
             )
-            // res.status(200).json({access_token, payload})
-            return res.redirect(200, 'http://localhost:9601/meal-api/v1/food/home-page') // for local development
-            // return res.redirect(200, 'http://productservice:9601/meal-api/v1/food/home-page') //for containers
-
-
-            // const access_token = jwt.sign(payload, access_secret, {expiresIn: '1h'}, (err, token)=>{
-            //     if(err){
-            //         console.log(err);
-            //         return res.status(400).send('there was an error signing you in')
-            //     }
-            //     return res.status(200).json({token})
-            // })
+            res.status(200).json({access_token, payload})
+            // return res.redirect(200, 'http://localhost:9601/meal-api/v1/food/home-page') // for local development
+            // // return res.redirect(200, 'http://productservice:9601/meal-api/v1/food/home-page') //for containers
         }
         
     } catch (error) {
@@ -232,38 +223,51 @@ const updatePassword = async(req, res)=>{
 }
 // reset Password -forgotten password
 const resetPassword = async(req, res)=>{
-    const {email} = req.body
-    const user = await User.findOne({email})
-    if(!user){
-        console.log('user not found')
-        return res.status(404).send('No user with this email found. Try signing up')
-    }
-    const params = {
-        Source: 'geraldlouisugwunna@gmail.com',
-        Destination: {
-          ToAddresses: [email],
-        },
-        Message: {
-          Subject: {
-            Data: 'Password Reset',
-          },
-          Body: {
-            Text: {
-              Data: 'Hello from MealApp! This is a password reset link. Kindly follow the link to change your password. If you didnt request for this, please ignore '+ `http://authservice:9602/meal-api/v1/auth/updatepassword?id=${user.id}`,
-            },
-          },
-        },
-    };
-    ses.sendEmail(params, (err, data) => {
+    try {
+        const {email} = req.body
+        const user = await User.findOne({email})
+        if(!user){
+            console.log('user not found')
+            return res.status(404).send('No user with this email found. Try signing up')
+        }
+        const passwordReset = await resetPasswordWithNodemailer(user)
+        console.log('Email sent successfully:');
+        console.log('Reset link has been sent')
+        return res.status(200).send(`A reset link has been sent to your email:${email}`)
+
+    } catch (err) {
         if (err) {
           console.error('Error sending email:', err);
           return res.status(400).send('There was an eerror')
-        } else {
-          console.log('Email sent successfully:', data);
-          console.log('Reset link has been sent')
-          return res.status(200).send(`A reset link has been sent to your email:${params.Destination.ToAddresses}`)
-        }
-    })
+        } 
+    }
+
+    // const params = {
+    //     Source: 'geraldlouisugwunna@gmail.com',
+    //     Destination: {
+    //       ToAddresses: [email],
+    //     },
+    //     Message: {
+    //       Subject: {
+    //         Data: 'Password Reset',
+    //       },
+    //       Body: {
+    //         Text: {
+    //           Data: 'Hello from MealApp! This is a password reset link. Kindly follow the link to change your password. If you didnt request for this, please ignore '+ `http://authservice:9602/meal-api/v1/auth/updatepassword?id=${user.id}`,
+    //         },
+    //       },
+    //     },
+    // };
+    // ses.sendEmail(params, (err, data) => {
+    //     if (err) {
+    //       console.error('Error sending email:', err);
+    //       return res.status(400).send('There was an eerror')
+    //     } else {
+    //       console.log('Email sent successfully:', data);
+    //       console.log('Reset link has been sent')
+    //       return res.status(200).send(`A reset link has been sent to your email:${params.Destination.ToAddresses}`)
+    //     }
+    // })
 
 }
 // email verification route

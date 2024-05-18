@@ -4,24 +4,6 @@ const {Soup, Swallow, SingleFood, Snacks, Drinks, Dish, Protien, Food, Cart} = r
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
 
-const multer = require('multer')
-
-// image upload
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "./uploads")
-    
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname+"_"+Date.now()+"_"+file.originalname)
-        
-    }
-})
-
-const upload = multer({
-    storage: storage
-}).single('image')
-
 const buyFood =async(req, res)=>{
     try {
         const {ids} = req.body;
@@ -78,25 +60,23 @@ const buyFood =async(req, res)=>{
 
 const addFood = async(req, res)=>{
     try {
-        console.log('1')
         const {name, description, type, discount,  price} = req.body
         console.log(req.body);
-        const image = req.file.filename
-        console.log('11')
 
         if(type === "Dish"){
-            if(!(name, description, price, type, image)){
+            if(!(name, description, price, type)){
                 return res.status(400).send('Please enter all required fields')
         
+            }else{
+                const newDish = await Dish.create({
+                    name, description, price, discount
+                })
+                res.status(201).json({
+                    status: "Success",
+                    message: "Food Created Successfully",
+                    food: newDish
+                })
             }
-            const newDish = await Dish.create({
-                name, description, price, discount, image
-            })
-            res.session.message = {
-                type: "success",
-                message: "Food added"
-            }
-            res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Dish Saved", newDish})
         }else if (type === "Soup"){
             if(!(name,  price, type)){
@@ -104,30 +84,29 @@ const addFood = async(req, res)=>{
         
             }else{
                 const newSoup = new Soup({
-                    name,  price, image, type
+                    name,  price, type
                 })
                 const soup = await newSoup.save()
-                req.session.message = {
-                    type: "success",
-                    message: "Food added"
-                }
-                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
+                res.status(201).json({
+                    status: "Success",
+                    message: "Food Created Successfully",
+                    food: newSoup
+                })
             }
-            // return res.status(201).json({msg: "Soup Saved", soup})
         }else if (type === "Swallow"){
             if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
         
             }else{
                 const newSwallow = new Swallow({
-                    name,  price, image, type
+                    name,  price, type
                 })
                 const swallow = await newSwallow.save()
-                req.session.message = {
-                    type: "success",
-                    message: "Food added"
-                }
-                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
+                res.status(201).json({
+                    status: "Success",
+                    message: "Food Created Successfully",
+                    food: newSwallow
+                })
             }
             // return res.status(201).json({msg: "Swallow Saved", swallow})
         }else if (type === "SingleFood"){
@@ -136,38 +115,32 @@ const addFood = async(req, res)=>{
         
             } else{
                 const newSingleFood = new SingleFood({
-                    name,  price, image, type
+                    name,  price, type
                 })
                 const singleFood = await newSingleFood.save()
-                req.session.message = {
-                    type: "success",
-                    message: "Food added"
-                }
-                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
+                res.status(201).json({
+                    status: "Success",
+                    message: "Food Created Successfully",
+                    food: newSingleFood
+                })
 
             }
             // return res.status(201).json({msg: "Food Saved", singleFood})
-        }else if (type === "Snack"){
+        }else if (type === "Snacks"){
             if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
         
             }else{
                 const newSnacks = new Snacks({
-                    name,  price, image, type
+                    name,  price, type
                 })
                 const snacks = await newSnacks.save()
-                req.session.message = {
-                    type: "success",
-                    message: "Food added"
-                }
-                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
+                res.status(201).json({
+                    status: "Success",
+                    message: "Food Created Successfully",
+                    food: newSnacks
+                })
             }
-
-            res.session.message = {
-                type: "success",
-                message: "Food added"
-            }
-            res.redirect('http://localhost:9601/meal-api/v1/food/')
             // return res.status(201).json({msg: "Snacks Saved", snacks})
         }else if (type === "Protien"){
             if(!(name,  price, type)){
@@ -175,14 +148,14 @@ const addFood = async(req, res)=>{
         
             }else{
                 const newProtien = new Protien({
-                    name,  price, image, type
+                    name,  price, type
                 })
                 const protien = await newProtien.save()
-                req.session.message = {
-                    type: "success",
-                    message: "Food added"
-                }
-                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
+                res.status(201).json({
+                    status: "Success",
+                    message: "Food Created Successfully",
+                    food: newProtien
+                })
             }
             // return res.status(201).json({msg: "Protien Saved", protien})
         }else if (type === "Drink"){
@@ -190,14 +163,14 @@ const addFood = async(req, res)=>{
                 return res.status(400).send('Please enter all required fields')
             }else{
                 const newDrink = new Drinks({
-                    name,  price, image, type
+                    name,  price, type
                 })
                 const drink = await newDrink.save()
-                req.session.message = {
-                    type: "success",
-                    message: "Drink added"
-                }
-                res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
+                res.status(201).json({
+                    status: "Success",
+                    message: "Food Created Successfully",
+                    food: newDrink
+                })
             }
             // return res.status(201).json({msg: "Drink Saved", drink})
         }
@@ -254,7 +227,7 @@ const getFood = async(req, res)=>{
 
 const getFoodBasedOnType = async (req, res) => {
     try {
-        const { type } = req.query;
+        const { type } = req.body;
 
         if (!type) {
             return res.status(400).send('Please provide a valid food type');
@@ -263,25 +236,25 @@ const getFoodBasedOnType = async (req, res) => {
         let foods;
 
         switch (type) {
-            case 'soups':
+            case 'Soup':
                 foods = await Soup.find();
                 break;
-            case 'snacks':
+            case 'Snacks':
                 foods = await Snacks.find();
                 break;
-            case 'swallow':
+            case 'Swallow':
                 foods = await Swallow.find();
                 break;
-            case 'singleFood':
+            case 'SingleFood':
                 foods = await SingleFood.find();
                 break;
-            case 'protien':
+            case 'Protien':
                 foods = await Protien.find();
                 break;
-            case 'dish':
+            case 'Dish':
                 foods = await Dish.find();
                 break;
-            case 'drinks':
+            case 'Drinks':
                 foods = await Drinks.find();
                 break;
             default:
@@ -303,29 +276,30 @@ const getFoodBasedOnType = async (req, res) => {
 // get a particular food
 const getAFood = async (req, res) => {
     try {
-        const { type, id } = req.params;
+        const { id } = req.params;
+        const { type} = req.body;
         let foodModel;
 
         switch (type) {
-            case 'soups':
+            case 'Soup':
                 foodModel = Soup;
                 break;
-            case 'snacks':
+            case 'Snacks':
                 foodModel = Snacks;
                 break;
-            case 'swallow':
+            case 'Swallow':
                 foodModel = Swallow;
                 break;
-            case 'singleFood':
+            case 'SingleFood':
                 foodModel = SingleFood;
                 break;
-            case 'protien':
+            case 'Protien':
                 foodModel = Protien;
                 break;
-            case 'dish':
+            case 'Dish':
                 foodModel = Dish;
                 break;
-            case 'drinks':
+            case 'Drinks':
                 foodModel = Drinks;
                 break;
             default:
@@ -354,11 +328,9 @@ const updateFood = async(req, res)=>{
         const type = req.body.type
         let food
         let foodModel;
-        // console.log(req.body)
-        // console.log(req.params.id)
 
         switch (type) {
-            case 'soups':
+            case 'Soup':
                 food = await Soup.findById(foodId);
                 foodModel = Soup
                 break;
@@ -366,23 +338,23 @@ const updateFood = async(req, res)=>{
                 food = await Snacks.findById(foodId);
                 foodModel= Snacks
                 break;
-            case 'swallow':
+            case 'Swallow':
                 food = await Swallow.findById(foodId);
                 foodModel = Swallow
                 break;
-            case 'singleFood':
+            case 'SingleFood':
                 food = await SingleFood.findById(foodId);
                 foodModel = SingleFood
                 break;
-            case 'protien':
+            case 'Protien':
                 food = await Protien.findById(foodId);
                 foodModel = Protien
                 break;
-            case 'dish':
+            case 'Dish':
                 food = await Dish.findById(foodId);
                 foodModel = Dish
                 break;
-            case 'drinks':
+            case 'Drinks':
                 food = await Drinks.findById(foodId);
                 foodModel = Drinks
                 break;
@@ -411,25 +383,25 @@ const deleteFood = async (req, res) => {
         let foodModel;
 
         switch (type) {
-            case 'soups':
+            case 'Soup':
                 foodModel = Soup;
                 break;
-            case 'snacks':
+            case 'Snacks':
                 foodModel = Snacks;
                 break;
-            case 'swallow':
+            case 'Swallow':
                 foodModel = Swallow;
                 break;
-            case 'singleFood':
+            case 'SingleFood':
                 foodModel = SingleFood;
                 break;
-            case 'protien':
+            case 'Protien':
                 foodModel = Protien;
                 break;
-            case 'dish':
+            case 'Dish':
                 foodModel = Dish;
                 break;
-            case 'drinks':
+            case 'Drinks':
                 foodModel = Drinks;
                 break;
             default:
@@ -442,16 +414,8 @@ const deleteFood = async (req, res) => {
             console.log(`Couldn't find that ${type}`);
             return res.status(400).send(`No ${type} found`);
         }
-        if(food.image != ''){
-            fs.unlinkSync('./uploads/'+ food.image)
-        }
-        req.session.message = {
-            type: "success",
-            message: "Food Deleted"
-        }
-        res.redirect('http://localhost:9601/meal-api/v1/food/home-page')
 
-        // return res.status(200).json({ food });
+        return res.status(200).json({ food });
     } catch (error) {
         console.log(error);
         return res.status(500).send('Internal Server Error ' + error.message);
@@ -465,36 +429,36 @@ const mostExpensiveFood = async(req, res)=>{
         // loop through the food
         // get the on with the highest price
         // return that food
-        const {type} = req.query
-        let foods;
+        const {type} = req.body
+        let food;
         let price;
         switch (type) {
-            case "soups":
-                foods = await Soup.find()
-                price = foods.soupPrice
+            case "Soup":
+                food = await Soup.find()
+                price = food.price
                 break;
-            case "snacks":
-                foods = await Snacks.find()
+            case "Snacks":
+                food = await Snacks.find()
                 break;
-            case "swallow":
-                foods = await Swallow.find()
+            case "Swallow":
+                food = await Swallow.find()
                 break;
-            case "singleFood":
-                foods = await SingleFood.find()
+            case "SingleFood":
+                food = await SingleFood.find()
                 break;
-            case "protien":
-                foods = await Protien.find()
+            case "Protien":
+                food = await Protien.find()
                 break;
-            case "drinks":
-                foods = await Drinks.find()
+            case "Drinks":
+                food = await Drinks.find()
                 break;
-            case "dish":
-                foods = await Dish.find()
+            case "Dish":
+                food = await Dish.find()
                 break;
             default:
                 break;
         }
-        const mostExpensiveFood = foods.reduce((maxFood, currentFood) => {
+        const mostExpensiveFood = food.reduce((maxFood, currentFood) => {
             if (!maxFood || currentFood.price > maxFood.price) {
                 return currentFood;
             } else {
@@ -517,29 +481,29 @@ const mostExpensiveFood = async(req, res)=>{
 // discount foods
 const getDiscountedFood = async (req, res) => {
     try {
-        const { type } = req.params;
+        const { type } = req.body;
         let foodModel;
 
         switch (type) {
-            case 'soups':
+            case 'Soup':
                 foodModel = Soup;
                 break;
-            case 'snacks':
+            case 'Snacks':
                 foodModel = Snacks;
                 break;
-            case 'swallow':
+            case 'Swallow':
                 foodModel = Swallow;
                 break;
-            case 'singleFood':
+            case 'SingleFood':
                 foodModel = SingleFood;
                 break;
-            case 'protien':
+            case 'Protien':
                 foodModel = Protien;
                 break;
-            case 'dish':
+            case 'Dish':
                 foodModel = Dish;
                 break;
-            case 'drinks':
+            case 'Drinks':
                 foodModel = Drinks;
                 break;
             default:
@@ -571,7 +535,6 @@ module.exports = {
     updateFood, 
     getDiscountedFood, 
     mostExpensiveFood,
-    upload
 }
 
 // routes for v1.2

@@ -20,10 +20,7 @@ const SoupSchema= new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    image: {
-        type: String,
-        required: true
-    }
+
 },{
     timestamps: true
 });
@@ -49,10 +46,7 @@ const SwallowSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    image: {
-        type: String,
-        required: true
-    }
+
 },{
     timestamps: true
 });
@@ -77,10 +71,7 @@ const SnacksSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    image: {
-        type: String,
-        required: true
-    }
+
 },{
     timestamps: true
 })
@@ -94,7 +85,7 @@ const DrinksSchema = new mongoose.Schema({
 
     type: {
         type: String,
-        enum : ["Drink"]
+        enum : ["Drinks"]
     },
 
     price: {
@@ -106,10 +97,7 @@ const DrinksSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    image: {
-        type: String,
-        required: true
-    }
+
 },{
     timestamps: true
 })
@@ -135,10 +123,7 @@ const SingleFoodSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    image: {
-        type: String,
-        required: true
-    }
+
 },{
     timestamps: true
 })
@@ -163,10 +148,7 @@ const ProtienSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    image: {
-        type: String,
-        required: true
-    }
+
 },{
     timestamps: true
 })
@@ -195,10 +177,7 @@ const DishSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    image: {
-        type: String,
-        required: true
-    }
+
 },{
     timestamps: true
 })

@@ -51,7 +51,28 @@ const registerServiceWithNodeMailer = (user)=>{
     })
 }
 
-module.exports = {registerServiceWithAWS, registerServiceWithNodeMailer}
+const resetPasswordWithNodemailer = (user)=>{
+    return new Promise (async(resolve, reject)=>{
+        try {
+            const {email} = user
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: email,
+                subject : 'MealApp Password Reset Mail',
+                text: 'Hello from MealApp! This is a password reset link. Kindly follow the link to change your password. If you didnt request for this, please ignore '+ `http://authservice:9602/meal-api/v1/auth/updatepassword?id=${user.id}`
+            }
+            const result = await sendMailPromise(mailOptions)
+            if(result){
+                resolve({success: true})
+            }
+        } catch (error) {
+            console.log(error)
+            reject(error)
+        }
+    })
+}
+
+module.exports = {registerServiceWithAWS, registerServiceWithNodeMailer, resetPasswordWithNodemailer}
 
 
 

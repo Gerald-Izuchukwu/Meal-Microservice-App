@@ -13,60 +13,72 @@ const calcDeliveryTime = (timestamp, hoursToAdd, minutesToAdd)=>{
 
 // place order from already sampled food ----incomplete route
 const placeOrder = async(req, res)=>{
+    
     try {
-        const orderArray = []
-        await rabbitConnect().then((channel)=>{
-            channel.consume("ORDER", data=>{
-                // const {food, timestamp} = JSON.parse(data.content.dataToSend)
-                const {dataToSend} = JSON.parse(data.content)
-                const {food, timestamp} = dataToSend
-                const user = req.body.user
-                const estimatedDeliveryTime = calcDeliveryTime(timestamp, 1, 45)
-                console.log(estimatedDeliveryTime)
-                console.log('Consuming ORDER Queue')
-                let totalPrice = 0
-                for(let i=0; i<food.length; i++){
-                    totalPrice += food[i].price
+        const orderArray = [];
+        const channel = await rabbitConnect();
+        
+        channel.consume("ORDER", async (data) => {
+            try {
+                const { dataToSend } = JSON.parse(data.content.toString());
+                const { food, timestamp } = dataToSend;
+                const user = req.body.user; // Ensure req is defined in the right scope
+                const estimatedDeliveryTime = calcDeliveryTime(timestamp, 1, 45);
+                console.log(estimatedDeliveryTime);
+                console.log('Consuming ORDER Queue');
+    
+                let totalPrice = 0;
+                for (let i = 0; i < food.length; i++) {
+                    totalPrice += food[i].price;
                 }
+    
                 const order = {
                     food,
-                    address : "userAddress", //correct this later to be the main user add
+                    address: "userAddress", // Correct this later to be the main user address
                     user, 
                     takeOut: true,
                     paymentOnDelivery: false,
                     totalPrice,
-                    estimatedDeliveryTime : estimatedDeliveryTime.toString(),
+                    estimatedDeliveryTime: estimatedDeliveryTime.toString(),
                     delivered: false,
                     isCanceled: false,
                     isAssigned: false,
                     assignedTo: 'none'
-                }
-                orderArray.push(order)
-                Order.create(order).then((data)=>{ 
-                    console.log('Sending to PRODUCT Queue');
-                    channel.sendToQueue("PRODUCT", Buffer.from(JSON.stringify({data})))
-                })
-
-                channel.ack(data)
-            })
-            
-            setTimeout(()=>{
-                channel.close()
-            }, 2000)
-        })
-        await rabbitConnect().then((channel)=>{
-            const order = orderArray[0]
-            channel.sendToQueue('DELIVERY', Buffer.from(JSON.stringify({order})))
-            console.log('Sending To DELIVERY queue')
-        }).then(()=>{
-            axios.post("http://deliveryservice:9603/meal-api/v1/delivery/deliverOrder")
-        })
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send('Internal Server Error ' + error.message)
+                };
+                orderArray.push(order);
     
+                const createdOrder = await Order.create(order);
+                console.log('Sending to PRODUCT Queue');
+                channel.sendToQueue("PRODUCT", Buffer.from(JSON.stringify({ data: createdOrder })));
+                channel.ack(data);
+            } catch (error) {
+                console.error('Error processing message:', error);
+                channel.nack(data); 
+            }
+        });
+    
+        // Sending to DELIVERY queue after processing messages
+        setTimeout(async () => {
+            try {
+                if (orderArray.length > 0) {
+                    const order = orderArray[0];
+                    channel.sendToQueue('DELIVERY', Buffer.from(JSON.stringify({ order })));
+                    console.log('Sending to DELIVERY queue');
+                    
+                    await axios.post("http://localhost:9603/meal-api/v1/delivery/deliverOrder");
+                    // await axios.post("http://deliveryservice:9603/meal-api/v1/delivery/deliverOrder");
+                }
+            } catch (error) {
+                console.error('Error sending to DELIVERY queue or making HTTP request:', error);
+            } finally {
+                channel.close();
+            }
+        }, 2000);
+    
+    } catch (error) {
+        console.error('Error connecting to RabbitMQ or processing messages:', error);
     }
+    
 }
 
 
@@ -165,7 +177,7 @@ const deleteAllOrders = async(req, res)=>{
 // completed order route - a user should mark an order completed when they receive the order
 const receivedOrder = async (req, res) => {
     try {
-        const orderId = req.params.orderId;
+        const orderId = req.params.id;
 
         // Find the order by orderId
         const order = await Order.findById(orderId);
@@ -175,7 +187,7 @@ const receivedOrder = async (req, res) => {
         }
 
         // Update the order's completed status
-        order.completed = true;
+        order.delivered = true;
         await order.save();
         
 
