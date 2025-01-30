@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // const axios = require('axios').default
+=======
+const axios = require('axios').default
+>>>>>>> 4050fe2 (Modified Code Version 1 App Completed)
 document.addEventListener("DOMContentLoaded", function () {
     const firstNameInput = document.getElementById("firstName");
     const lastNameInput = document.getElementById("lastName");
@@ -38,9 +42,15 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(details)
             console.log(response)
             console.log(message)
+<<<<<<< HEAD
             if (response.status === 200 && response.headers.location) {
                 window.location.href = response.headers.location;
             }
+=======
+            // if (response.status === 200 && response.headers.location) {
+            //     window.location.href = response.headers.location;
+            // }
+>>>>>>> 4050fe2 (Modified Code Version 1 App Completed)
         } catch (error) {
             if(error){
                 console.log(error)

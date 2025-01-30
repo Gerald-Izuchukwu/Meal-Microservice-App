@@ -49,15 +49,17 @@ const checkVerifiedEmail = (emailAddress)=>{
 
 const register = async(req, res)=>{
     try { 
-        const {name, email, role, password} = req.body;
+        const {name, email, password, role} = req.body;
+        // console.log(req.body)
         const userExists = await User.findOne({email})
         if(userExists){
             console.log('This user exists');
             return res.status(400).send('This email is already registered, please log in')
         }
         const user = {
-            name, email, role, password
+            name, email, password, role
         }
+        // console.log(user)
         await rabbitConnect().then((channel)=>{
             channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
             console.log('Sending user to USER queue');
@@ -91,6 +93,7 @@ const register = async(req, res)=>{
 const callSaveUser = (req, res)=>{
     axios.post("http://localhost:9602/meal-api/v1/auth/saveuser") //for local dev
     // axios.post("http://authservice:9602/meal-api/v1/auth/saveuser") //for container
+
 }
 
 const saveUser = async(req, res)=>{
@@ -126,6 +129,8 @@ const saveUser = async(req, res)=>{
 
                 //     }
                 // })
+                res.send(user)
+
                 channel.ack(data)
                 channel.close()
                 
@@ -148,7 +153,8 @@ const login = async(req, res)=>{
             console.log('user does not exist');
             return res.status(404).send('This email is not registered, please register')
         }//this function is just for test, for production, detleted this function and just leave check for incorect pasword
-        const passwordMatch = await bcrypt.compare(password, user.password)
+        const passwordMatch = await bcrypt.compare(String(password), user.password)
+        console.log(password, user.password)
         if(!passwordMatch){
             console.log('Password doesnt match');
             return res.status(404).send('Incorrect password')

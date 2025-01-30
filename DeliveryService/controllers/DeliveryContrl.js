@@ -90,6 +90,9 @@ const deliveryComplete = async(req, res)=>{
         const email = req.user.email
         const id = req.params.id
         const order = await Delivery.findById(id)
+        console.log(order);
+        console.log(id);
+        
         if(!order){
             console.log('No order found or order might have been deleted')
             return res.status(400).send('No order found or order might have been deleted')

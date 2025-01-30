@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const submitButton = document.getElementById("submit-button");
     const flashMessage = document.getElementById('flash-message');
 
+
     submitButton.addEventListener('click', async function(e){
         e.preventDefault()
         const url = 'http://localhost:9602/meal-api/v1/auth/login'
@@ -29,4 +30,3 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     
 })
-

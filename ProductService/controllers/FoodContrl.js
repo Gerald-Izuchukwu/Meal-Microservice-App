@@ -32,7 +32,14 @@ const buyFood =async(req, res)=>{
             return
         }).then(()=>{
             // axios.post("http://orderservice:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
-            axios.post("http://localhost:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
+            axios.post("http://localhost:9600/meal-api/v1/order/placeOrder", 
+                { user: req.user.email },  
+                { 
+                  headers: { 
+                    Authorization: req.headers.authorization  
+                  }
+                }
+            ).catch((err)=>{console.log(err.message);})
         })
 
         rabbitConnect().then((channel)=>{
@@ -66,7 +73,6 @@ const addFood = async(req, res)=>{
         if(type === "Dish"){
             if(!(name, description, price, type)){
                 return res.status(400).send('Please enter all required fields')
-        
             }else{
                 const newDish = await Dish.create({
                     name, description, price, discount
@@ -77,11 +83,9 @@ const addFood = async(req, res)=>{
                     food: newDish
                 })
             }
-            // return res.status(201).json({msg: "Dish Saved", newDish})
         }else if (type === "Soup"){
             if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
-        
             }else{
                 const newSoup = new Soup({
                     name,  price, type
@@ -108,11 +112,10 @@ const addFood = async(req, res)=>{
                     food: newSwallow
                 })
             }
-            // return res.status(201).json({msg: "Swallow Saved", swallow})
         }else if (type === "SingleFood"){
             if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
-        
+
             } else{
                 const newSingleFood = new SingleFood({
                     name,  price, type
@@ -123,9 +126,7 @@ const addFood = async(req, res)=>{
                     message: "Food Created Successfully",
                     food: newSingleFood
                 })
-
             }
-            // return res.status(201).json({msg: "Food Saved", singleFood})
         }else if (type === "Snacks"){
             if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
@@ -141,7 +142,6 @@ const addFood = async(req, res)=>{
                     food: newSnacks
                 })
             }
-            // return res.status(201).json({msg: "Snacks Saved", snacks})
         }else if (type === "Protien"){
             if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
@@ -157,7 +157,6 @@ const addFood = async(req, res)=>{
                     food: newProtien
                 })
             }
-            // return res.status(201).json({msg: "Protien Saved", protien})
         }else if (type === "Drink"){
             if(!(name,  price, type)){
                 return res.status(400).send('Please enter all required fields')
@@ -172,7 +171,6 @@ const addFood = async(req, res)=>{
                     food: newDrink
                 })
             }
-            // return res.status(201).json({msg: "Drink Saved", drink})
         }
 
     } catch (error) {
@@ -276,8 +274,9 @@ const getFoodBasedOnType = async (req, res) => {
 // get a particular food
 const getAFood = async (req, res) => {
     try {
+
         const { id } = req.params;
-        const { type} = req.body;
+        const {type} = req.query
         let foodModel;
 
         switch (type) {
@@ -323,49 +322,51 @@ const getAFood = async (req, res) => {
 // update a food, also be used to discount food
 const updateFood = async(req, res)=>{
     try {
-        const foodId = req.params.id
-        // const {type} = req.query
-        const type = req.body.type
+        // const type = req.body.type
+        const {id} = req.params
+        const {type} = req.query
         let food
         let foodModel;
 
         switch (type) {
-            case 'Soup':
-                food = await Soup.findById(foodId);
+            case 'soup':
+                food = await Soup.findById(id);
                 foodModel = Soup
                 break;
             case 'snacks':
-                food = await Snacks.findById(foodId);
+                food = await Snacks.findById(id);
                 foodModel= Snacks
                 break;
-            case 'Swallow':
-                food = await Swallow.findById(foodId);
+            case 'swallow':
+                food = await Swallow.findById(id);
                 foodModel = Swallow
                 break;
-            case 'SingleFood':
-                food = await SingleFood.findById(foodId);
+            case 'singleFood':
+                food = await SingleFood.findById(id);
                 foodModel = SingleFood
                 break;
-            case 'Protien':
-                food = await Protien.findById(foodId);
+            case 'protien':
+                food = await Protien.findById(id);
                 foodModel = Protien
                 break;
-            case 'Dish':
-                food = await Dish.findById(foodId);
+            case 'dish':
+                food = await Dish.findById(id);
                 foodModel = Dish
                 break;
-            case 'Drinks':
-                food = await Drinks.findById(foodId);
+            case 'drinks':
+                food = await Drinks.findById(id);
                 foodModel = Drinks
                 break;
             default:
                 return res.status(400).send('Invalid food type');
         }
+
+        
         if(!food){
             console.log('No such Food');
             return res.status(400).send("Food doesnt exist")
         }
-        const updatedFood = await foodModel.findByIdAndUpdate(foodId, {$set: req.body}, {new: true})
+        const updatedFood = await foodModel.findByIdAndUpdate(id, {$set: req.body}, {new: true})
         return res.status(201).json({
             msg: "Food Updated",
             Food: updatedFood
@@ -379,7 +380,7 @@ const updateFood = async(req, res)=>{
 const deleteFood = async (req, res) => {
     try {
         const { id } = req.params;
-        const type= req.body.type
+        const {type} = req.query
         let foodModel;
 
         switch (type) {
@@ -422,66 +423,11 @@ const deleteFood = async (req, res) => {
     }
 };
 
-// get my most expensive food
-const mostExpensiveFood = async(req, res)=>{
-    try {
-        // get all food
-        // loop through the food
-        // get the on with the highest price
-        // return that food
-        const {type} = req.body
-        let food;
-        let price;
-        switch (type) {
-            case "Soup":
-                food = await Soup.find()
-                price = food.price
-                break;
-            case "Snacks":
-                food = await Snacks.find()
-                break;
-            case "Swallow":
-                food = await Swallow.find()
-                break;
-            case "SingleFood":
-                food = await SingleFood.find()
-                break;
-            case "Protien":
-                food = await Protien.find()
-                break;
-            case "Drinks":
-                food = await Drinks.find()
-                break;
-            case "Dish":
-                food = await Dish.find()
-                break;
-            default:
-                break;
-        }
-        const mostExpensiveFood = food.reduce((maxFood, currentFood) => {
-            if (!maxFood || currentFood.price > maxFood.price) {
-                return currentFood;
-            } else {
-                return maxFood;
-            }
-
-        }, null)
-        if(!mostExpensiveFood){
-            return res.send("NO food at the moment")
-        }
-        return res.status(200).send(mostExpensiveFood)
-
-    } catch (error) {
-        console.log(error);
-        // return res.status(500).send('Internal Server Error ' + error.message)
-        return res.status(500).send('Internal Server Error ' + "Try later")
-    }
-}
 
 // discount foods
 const getDiscountedFood = async (req, res) => {
     try {
-        const { type } = req.body;
+        const { type } = req.query;
         let foodModel;
 
         switch (type) {
@@ -534,7 +480,6 @@ module.exports = {
     deleteFood, 
     updateFood, 
     getDiscountedFood, 
-    mostExpensiveFood,
 }
 
 // routes for v1.2
@@ -543,3 +488,115 @@ module.exports = {
 //update a food (eg, update price)
 // discount a food
 // get all Orders from a user
+// get my most expensive food
+// const mostExpensiveFood = async(req, res)=>{
+//     try {
+//         // get all food
+//         // loop through the food
+//         // get the on with the highest price
+//         // return that food
+//         const {type} = req.query
+//         let foods;
+//         let price;
+//         switch (type) {
+//             case "soups":
+//                 foods = await Soup.find()
+//                 price = foods.soupPrice
+//                 break;
+//             case "snacks":
+//                 foods = await Snacks.find()
+//                 break;
+//             case "swallow":
+//                 foods = await Swallow.find()
+//                 break;
+//             case "singleFood":
+//                 foods = await SingleFood.find()
+//                 break;
+//             case "protien":
+//                 foods = await Protien.find()
+//                 break;
+//             case "drinks":
+//                 foods = await Drinks.find()
+//                 break;
+//             case "dish":
+//                 foods = await Dish.find()
+//                 break;
+//             default:
+//                 break;
+//         }
+//         const mostExpensiveFood = foods.reduce((maxFood, currentFood) => {
+//                 if (!maxFood || currentFood.price > maxFood.price) {
+//                 return currentFood;
+//                 } else {
+//                 return maxFood;
+//                 }
+//             }, 
+//             null
+//         )
+//         return res.status(200).send(mostExpensiveFood)
+
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).send('Internal Server Error ' + error.message)
+//     }
+// }
+
+
+// ---
+
+
+// // get my most expensive food
+// const mostExpensiveFood = async(req, res)=>{
+//     try {
+//         // get all food
+//         // loop through the food
+//         // get the on with the highest price
+//         // return that food
+//         const {type} = req.body
+//         let food;
+//         let price;
+//         switch (type) {
+//             case "Soup":
+//                 food = await Soup.find()
+//                 price = food.price
+//                 break;
+//             case "Snacks":
+//                 food = await Snacks.find()
+//                 break;
+//             case "Swallow":
+//                 food = await Swallow.find()
+//                 break;
+//             case "SingleFood":
+//                 food = await SingleFood.find()
+//                 break;
+//             case "Protien":
+//                 food = await Protien.find()
+//                 break;
+//             case "Drinks":
+//                 food = await Drinks.find()
+//                 break;
+//             case "Dish":
+//                 food = await Dish.find()
+//                 break;
+//             default:
+//                 break;
+//         }
+//         const mostExpensiveFood = food.reduce((maxFood, currentFood) => {
+//             if (!maxFood || currentFood.price > maxFood.price) {
+//                 return currentFood;
+//             } else {
+//                 return maxFood;
+//             }
+
+//         }, null)
+//         if(!mostExpensiveFood){
+//             return res.send("NO food at the moment")
+//         }
+//         return res.status(200).send(mostExpensiveFood)
+
+//     } catch (error) {
+//         console.log(error);
+//         // return res.status(500).send('Internal Server Error ' + error.message)
+//         return res.status(500).send('Internal Server Error ' + "Try later")
+//     }
+// }
