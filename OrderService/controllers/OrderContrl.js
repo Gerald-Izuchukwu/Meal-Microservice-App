@@ -1,3 +1,4 @@
+const fs = require('fs')
 const Order = require('../models/OrderModel')
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
@@ -13,11 +14,9 @@ const calcDeliveryTime = (timestamp, hoursToAdd, minutesToAdd)=>{
 
 // place order from already sampled food ----incomplete route
 const placeOrder = async(req, res)=>{
-    
     try {
-
         const orderArray = []
-        console.log(req.headers.Authorization)
+        console.log(req.headers.authorization)
         await rabbitConnect().then((channel)=>{
             channel.consume("ORDER", data=>{
                 // const {food, timestamp} = JSON.parse(data.content.dataToSend)
@@ -67,13 +66,21 @@ const placeOrder = async(req, res)=>{
             const order = orderArray[0]
             channel.sendToQueue('DELIVERY', Buffer.from(JSON.stringify({order})))
             console.log('Sending To DELIVERY queue')
-        }).then(()=>{            
-            axios.post("http://localhost:9603/meal-api/v1/delivery/deliverOrder", {}, {headers: {Authorization: req.headers.authorization}})
+        }).then(()=>{   
+            if (!req.headers.authorization) {
+                return res.status(401).json({ error: "Authorization header is missing" });
+            }                     
+            axios.post(`http://${process.env.DELIVERY_SERVICE_HOST}:${process.env.DELIVERY_SERVICE_PORT}/meal-api/v1/delivery/saveOrder`, {}, {headers: {Authorization: req.headers.authorization}})
         })
 
     } catch (error) {
-        console.log(error);
-        return res.status(500).send('Internal Server Error ' + error.message)    
+        console.log("error");
+        fs.writeFileSync("./test.txt", JSON.stringify({
+            message: error.message,
+            stack: error.stack,
+            response: error.response ? error.response.data : "No response"
+        }, null, 2)); 
+        return res.status(500).send('Internal Server Error ')    
     }
 }
 

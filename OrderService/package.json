@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "amqplib": "^0.10.3",
-    "axios": "^1.4.0",
+    "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",

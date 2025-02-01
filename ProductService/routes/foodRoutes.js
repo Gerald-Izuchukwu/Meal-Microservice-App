@@ -18,6 +18,6 @@ router.route('/get-food').get( getFood)
 router.route('/get-food-type').get( getFoodBasedOnType)
 router.route('/add-food').post(isAuthenticated, isAdmin, addFood)
 router.route('/discountedFoods').get(getDiscountedFood)
-router.route("/add-to-cart/:id").post(addToCart)
+router.route("/add-to-cart").post(addToCart)
 router.route("/:id").get(isAuthenticated, getAFood).delete(isAuthenticated, isAdmin, deleteFood).put(isAuthenticated,isAdmin,updateFood)
 module.exports = router

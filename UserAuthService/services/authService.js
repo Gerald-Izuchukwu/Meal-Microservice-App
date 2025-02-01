@@ -7,8 +7,9 @@ const registerServiceWithAWS = (user)=>{
         try {
             const {name, email, password} = user
             const Identities = await listIdentities()
+            console.log(Identities)
             if(Identities.includes(email)){
-                const verifiedEmail = await checkVerifiedEmail(email)
+                const verifiedEmail = await checkVerifiedEmail(email) //checks the email identity status
                 if(!verifiedEmail){ // if the email is in identities but not verified
                     ses.verifyEmailIdentity({EmailAddress: email}).send()
                     resolve({success: true, emailVerficationRequired: true})

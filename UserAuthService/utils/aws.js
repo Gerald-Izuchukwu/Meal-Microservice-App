@@ -30,6 +30,7 @@ const listIdentities = () =>{
 
 }
 
+// checks if the email Address identity status is verified or not verified on SES
 const checkVerifiedEmail = (emailAddress)=>{
     return new Promise((resolve, reject)=>{
         const params = {

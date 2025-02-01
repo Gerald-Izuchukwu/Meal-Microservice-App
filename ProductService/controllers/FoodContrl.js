@@ -31,8 +31,9 @@ const buyFood =async(req, res)=>{
             console.log("sending food to ORDER queue")
             return
         }).then(()=>{
+            
             // axios.post("http://orderservice:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
-            axios.post("http://localhost:9600/meal-api/v1/order/placeOrder", 
+            axios.post(`http://${process.env.ORDER_SERVICE_HOST}:${process.env.ORDER_SERVICE_PORT}/meal-api/v1/order/placeOrder`, 
                 { user: req.user.email },  
                 { 
                   headers: { 
@@ -183,12 +184,17 @@ const addFood = async(req, res)=>{
 const addToCart = async(req, res)=>{
     try {
         const user_id = req.user
-        const ids = req.body.ids
+        const {ids} = req.body
         if(!ids){
             return res.send('No items to add to Cart')
         }else{
-            const newCart = new Cart({user_id, ids})
+            const newCart = new Cart({"name": user_id, ids})
+            console.log(newCart);
+            console.log(req.user)
+            
+            fs.writeFileSync("./test.txt", JSON.stringify(req.headers, null, 2))
             const cart = await newCart.save()
+            return res.send("item added to cart")
         }
     } catch (error) {
         console.log(error);
@@ -225,7 +231,8 @@ const getFood = async(req, res)=>{
 
 const getFoodBasedOnType = async (req, res) => {
     try {
-        const { type } = req.body;
+        const { type } = req.query;
+        const formatedType = type.toLowerCase()
 
         if (!type) {
             return res.status(400).send('Please provide a valid food type');
@@ -233,26 +240,26 @@ const getFoodBasedOnType = async (req, res) => {
 
         let foods;
 
-        switch (type) {
-            case 'Soup':
+        switch (formatedType) {
+            case 'soup':
                 foods = await Soup.find();
                 break;
-            case 'Snacks':
+            case 'snacks':
                 foods = await Snacks.find();
                 break;
-            case 'Swallow':
+            case 'swallow':
                 foods = await Swallow.find();
                 break;
-            case 'SingleFood':
+            case 'singlefood':
                 foods = await SingleFood.find();
                 break;
-            case 'Protien':
+            case 'protien':
                 foods = await Protien.find();
                 break;
-            case 'Dish':
+            case 'dish':
                 foods = await Dish.find();
                 break;
-            case 'Drinks':
+            case 'drinks':
                 foods = await Drinks.find();
                 break;
             default:
@@ -328,7 +335,7 @@ const updateFood = async(req, res)=>{
         let food
         let foodModel;
 
-        switch (type) {
+        switch (type.toLowerCase()) {
             case 'soup':
                 food = await Soup.findById(id);
                 foodModel = Soup
@@ -341,7 +348,7 @@ const updateFood = async(req, res)=>{
                 food = await Swallow.findById(id);
                 foodModel = Swallow
                 break;
-            case 'singleFood':
+            case 'singlefood':
                 food = await SingleFood.findById(id);
                 foodModel = SingleFood
                 break;
@@ -428,28 +435,29 @@ const deleteFood = async (req, res) => {
 const getDiscountedFood = async (req, res) => {
     try {
         const { type } = req.query;
+        const formatedType = type.toLowerCase()
         let foodModel;
 
-        switch (type) {
-            case 'Soup':
+        switch (formatedType) {
+            case 'soup':
                 foodModel = Soup;
                 break;
-            case 'Snacks':
+            case 'snacks':
                 foodModel = Snacks;
                 break;
-            case 'Swallow':
+            case 'swallow':
                 foodModel = Swallow;
                 break;
-            case 'SingleFood':
+            case 'singlefood':
                 foodModel = SingleFood;
                 break;
-            case 'Protien':
+            case 'protien':
                 foodModel = Protien;
                 break;
-            case 'Dish':
+            case 'dish':
                 foodModel = Dish;
                 break;
-            case 'Drinks':
+            case 'drinks':
                 foodModel = Drinks;
                 break;
             default:

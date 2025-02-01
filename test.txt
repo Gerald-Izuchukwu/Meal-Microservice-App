@@ -1,0 +1,15 @@
+create new foler for project
+init terraform
+push all services to the repository
+
+in the remote server 
+run yum update
+run docker install
+##for the container own
+pull the docker image from the remote repository
+run the image
+
+#for the vm/local instance
+pull the git repository
+npm install
+run containers

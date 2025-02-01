@@ -5,7 +5,7 @@ const {
     login, resetPassword, updatePassword, 
     getUserByID, signOut, 
 } = require('../controllers/UserContrl')
-
+const {isAuthenticated} = require('../isAuthenticated')
 
 router.route('/register').post(register)
 router.route('/saveuser').post(saveUser).get(callSaveUser)

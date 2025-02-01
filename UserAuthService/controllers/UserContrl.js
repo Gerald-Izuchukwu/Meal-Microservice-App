@@ -1,4 +1,3 @@
-// how do i call saveUser now?
 const User = require('../models/UserModel')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
@@ -8,11 +7,6 @@ const refresh_secret = process.env.JWT_REFRESH_TOKEN_SECRET_DEV
 const ses = require('../utils/aws')
 const axios = require('axios').default
 const {registerServiceWithAWS, registerServiceWithNodeMailer, resetPasswordWithNodemailer} = require('../services/authService.js')
-
-// do this. create remove the saving of user from the register controller. create a fucntion-save user
-// once the user reisters, he receives a message and that user details is sent to a queue called user queue
-// once the user click on the confirm mail, which is a route, save user route consumes the USER queue and saves that data to db
-
 
 const listIdentities = () =>{
     return new Promise((resolve, reject)=>{
@@ -66,8 +60,8 @@ const register = async(req, res)=>{
             return
         })
 
-        // const result = await registerServiceWithAWS(user)
-        const result = await registerServiceWithNodeMailer(user)
+        const result = await registerServiceWithAWS(user)
+        // const result = await registerServiceWithNodeMailer(user)
         console.log(result)
         if(result.success){
             if(result.emailVerificationRequired){
@@ -103,39 +97,37 @@ const saveUser = async(req, res)=>{
             channel.consume("USER", (data)=>{
                 const {user} = JSON.parse(data.content)
                 console.log(user)
-                User.create(user) //using aws, remove this line and uncomment the below code
-                // ses.listIdentities((err, data)=>{
-                //     if(err){
-                //         console.log(err)
-                //         return
-                //     }
-                //     console.log(data.Identities)
-                //     const {email} = user
-                //     if(data.Identities.includes(email)){
-                //         checkVerifiedEmail(email).then((data)=>{
-                //             if(data === true){
-                //                 User.create(user)
-                //                 console.log(email)
-                //                 console.log('yes')
-                //                 return res.status(201).json({"msg":"User saved", user})
-                //             }
-                //             else if(data === false){
-                //                 channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
-                //                 console.log('Sending user back to USER queue since user isnt verified ');
-                //                 return
-                //             }
-                //         })
-
-
-                //     }
-                // })
+                // User.create(user) //using aws, remove this line and uncomment the below code
+                ses.listIdentities((err, data)=>{
+                    if(err){
+                        console.log(err)
+                        return
+                    }
+                    // console.log(data.Identities)
+                    const {email} = user
+                    if(data.Identities.includes(email)){
+                        checkVerifiedEmail(email).then((data)=>{
+                            if(data === true){
+                                User.create(user)
+                                console.log(email)
+                                console.log('yes')
+                                return res.status(201).json({"msg":"User saved", user})
+                            }
+                            else if(data === false){
+                                channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
+                                console.log('Sending user back to USER queue since user isnt verified ');
+                                return
+                            }
+                        })
+                    }
+                })
                 res.send(user)
 
                 channel.ack(data)
                 channel.close()
                 
             })
-            return res.send('User saved')
+            return res.json('User saved')
         })
     } catch (error) {
         console.log(error);
@@ -152,7 +144,7 @@ const login = async(req, res)=>{
         if(!user){
             console.log('user does not exist');
             return res.status(404).send('This email is not registered, please register')
-        }//this function is just for test, for production, detleted this function and just leave check for incorect pasword
+        }//this function is just for test, for production, detlete this function and just leave check for incorect pasword
         const passwordMatch = await bcrypt.compare(String(password), user.password)
         console.log(password, user.password)
         if(!passwordMatch){
@@ -200,20 +192,24 @@ const getUserByID = async(req, res)=>{
 const updatePassword = async(req, res)=>{
     try {
         const id = req.params.id
-        const {newPassword, retypeNewPassword} = req.body
+        const {oldPassword, newPassword, retypeNewPassword} = req.body
         const user = await User.findOne({_id: id})
+        if(!(oldPassword) || !(newPassword) || !(retypeNewPassword)){
+            return res.status(400).send('Please enter your new password')
+        }
         if(!user){
             console.log('user not found')
             return res.status(404).send('No user with this email found. Try signing up')
         }
-        if(!(newPassword) || !(retypeNewPassword)){
-            return res.status(400).send('Please enter your new password')
+        const isMatch = await bcrypt.compare(String(oldPassword), user.password);
+        if (!isMatch) {
+            return res.status(400).send("Incorrect old password");
         }
         if(!(newPassword === retypeNewPassword)){
             return res.status(400).send('Passwords do not match')
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        const hashedPassword = await bcrypt.hash(String(newPassword), 10)
         const updatedUser = await User.findOneAndUpdate({_id: id}, {password: hashedPassword }, {
             new:true,
             runValidators: true

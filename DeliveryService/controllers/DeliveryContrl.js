@@ -54,7 +54,7 @@ const acceptToDeliverOrder = async(req, res)=>{
 
 }
 
-const deliverOrder = async(req, res)=>{ // saving order to database 
+const saveOrderToDatabase = async(req, res)=>{ // saving order to database 
     try {
         rabbitConnect().then((channel)=>{
             channel.consume("DELIVERY", (data)=>{
@@ -111,6 +111,6 @@ const deliveryComplete = async(req, res)=>{
         console.log(error)
         return res.status(500).send('Internal Server Error ' + error.message)
     }
-}
+}    
 
-module.exports = { getPendingOrder, deliverOrder, deliveryComplete, acceptToDeliverOrder}
+module.exports = { getPendingOrder, saveOrderToDatabase, deliveryComplete, acceptToDeliverOrder}
