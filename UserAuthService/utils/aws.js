@@ -15,7 +15,6 @@ const listIdentities = () =>{
         if(err){
             console.log(err.stack)
         }
-        console.log("AccessKey", AWS.config.credentials.accessKeyId);
 
     })
     return new Promise((resolve, reject)=>{

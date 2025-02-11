@@ -16,7 +16,6 @@ const calcDeliveryTime = (timestamp, hoursToAdd, minutesToAdd)=>{
 const placeOrder = async(req, res)=>{
     try {
         const orderArray = []
-        console.log(req.headers.authorization)
         await rabbitConnect().then((channel)=>{
             channel.consume("ORDER", data=>{
                 // const {food, timestamp} = JSON.parse(data.content.dataToSend)
@@ -45,10 +44,6 @@ const placeOrder = async(req, res)=>{
                     assignedTo: 'none'
 
                 }
-                // const createdOrder = await Order.create(order);
-                // console.log('Sending to PRODUCT Queue');
-                // channel.sendToQueue("PRODUCT", Buffer.from(JSON.stringify({ data: createdOrder })));
-                // channel.ack(data);
                 orderArray.push(order)
                 Order.create(order).then((data)=>{ 
                     console.log('Sending to PRODUCT Queue');
@@ -75,11 +70,6 @@ const placeOrder = async(req, res)=>{
 
     } catch (error) {
         console.log("error");
-        fs.writeFileSync("./test.txt", JSON.stringify({
-            message: error.message,
-            stack: error.stack,
-            response: error.response ? error.response.data : "No response"
-        }, null, 2)); 
         return res.status(500).send('Internal Server Error ')    
     }
 }

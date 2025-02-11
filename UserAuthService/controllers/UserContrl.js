@@ -146,7 +146,6 @@ const login = async(req, res)=>{
             return res.status(404).send('This email is not registered, please register')
         }//this function is just for test, for production, detlete this function and just leave check for incorect pasword
         const passwordMatch = await bcrypt.compare(String(password), user.password)
-        console.log(password, user.password)
         if(!passwordMatch){
             console.log('Password doesnt match');
             return res.status(404).send('Incorrect password')
