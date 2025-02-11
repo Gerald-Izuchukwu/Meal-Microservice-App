@@ -4,3 +4,4 @@ utils/
 ideas
 .dockerignore
 uploads/
+rabbitmq.conf

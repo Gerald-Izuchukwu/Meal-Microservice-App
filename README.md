@@ -4,35 +4,55 @@ This is a simple Food-Ecommerce CRUD app built with microservice architecture. I
 
 ## Getting Started
 
-1. Change into the project repository:
+1. Fork and Clone the Repository:
+    ```bash
+    git clone https://github.com/Gerald-Izuchukwu/Meal-Microservice-App.git
+
+2. Change into four microservice folders and install dependencies:
    ```bash
-   cd Meal-Microservice-App
+   cd Meal-Microservice-App/UserAuthService
+   npm install
 
-2. install all the required dependecies:
+   cd Meal-Microservice-App/ProductService
+   npm install
+
+   cd Meal-Microservice-App/OrderService
+   npm install
+   
+   cd Meal-Microservice-App/DeliveryService
+   npm install
+
+5. Start your mongodb and rabbitmq container:
     ```bash
-    npm i
+    docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 -e RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS='-rabbit loopback_users []' rabbitmq:3.9-rc-management
 
-3. change to the Meal_User_Service folder:
+    docker run -p 27017:27017 --name mongodb-container -d mongo:latest
+
+5. Since each service will require it's own set of envvars, create a configuration file in each microservice folder and populate it with the values of the following envvars. 
+* For UserAuthService:
     ```bash
-    cd Meal-Microservice-App/Meal_User_Service
+    PORT, MONGO_URI, RABBITMQ_CONNECTION_STRING, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS, RABBITMQ_DEFAULT_HOST, RABBITMQ_DEFAULT_PORT, MONGO_DB_USERNAME, MONGO_DB_PASSWORD, JWT_ACCESS_TOKEN_SECRET, JWT_REFRESH_TOKEN, AWS_SecretAccessKey, AWS_AccessKeyID, AWS_Region, GMAIL_PASS, GMAIL_USER
 
-4. install all the required dependecies:
+GMAIL_PASS and GMAIL_USER is for sending emails, if you dont want to use Amazon SES. 
+
+* For Product Service:
     ```bash
-    npm i
+    PORT, MONGO_URI, JWTSECRET, RABBITMQ_CONNECTION_STRING, MONGO_DB_USERNAME, MONGO_DB_PASSWORD, RABBITMQ_DEFAULT_USER,RABBITMQ_DEFAULT_PASS, RABBITMQ_DEFAULT_HOST, RABBITMQ_DEFAULT_PORT, ORDER_SERVICE_HOST, ORDER_SERVICE_PORT
 
+* For Order Service:
+    ```bash
+    PORT, MONGO_URI, JWTSECRET, RABBITMQ_CONNECTION_STRING, MONGO_DB_USERNAME, MONGO_DB_PASSWORD, RABBITMQ_DEFAULT_USER,RABBITMQ_DEFAULT_PASS, RABBITMQ_DEFAULT_HOST, RABBITMQ_DEFAULT_PORT, DELIVERY_SERVICE_HOST, DELIVERY_SERVICE_PORT
 
-### To Test User/Auth Route:
-1. To register: 
-> send a POST request to "http://localhost:9602/meal-api/v1/auth/register" with <^>"name"<^>, <^>"email"<^>, and <^>"password"<^>
-2. 
-> To login in: send a post request to "http://localhost:9602/meal-api/v1/auth/login" with  <^>"email"<^> and <^>"password"<^>
-You would get a token on successful attempt. This is the token used to access certain routes
+* For Delivery Service:
+    ```bash
+    PORT, MONGO_URI, JWTSECRET, RABBITMQ_CONNECTION_STRING, MONGO_DB_USERNAME, MONGO_DB_PASSWORD, RABBITMQ_DEFAULT_USER,RABBITMQ_DEFAULT_PASS, RABBITMQ_DEFAULT_HOST, RABBITMQ_DEFAULT_PORT
 
-### To Test Product Route:
-Copy the token into the Bearer Token
-1. Get All Food: send a GET request to "http://localhost:9601/meal-api/v1/food/get-food"
-2. To Buy Food: send a POST request to "http://localhost:9601/meal-api/v1/food/buy-food" with a `key=<^>"ids"<^>` and `value=<^>array<^> of the ids of food you want to order`. This will return a created order for you
-3. To get Food based on type: send a GET request to "http://localhost:9601/meal-api/v1/food/get-food-type?type={type}"
+6. Start the Service
+The service can be started using nodemon or node. For each of the microservice, run:
+    ```bash
+    npm run start 
+    OR
+    npm run dev
 
-Other Routes can be tested as seen in the codebase
+### Routes
 

@@ -2,3 +2,4 @@ node_modules/
 config.env
 ideas.js
 .dockerignore
+rabbitmq.conf
