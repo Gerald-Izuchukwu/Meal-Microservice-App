@@ -1,6 +1,5 @@
 FROM node:18-alpine
 
-
 RUN mkdir -p /home/user-auth-service
 
 COPY . /home/user-auth-service

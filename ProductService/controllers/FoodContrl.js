@@ -3,6 +3,8 @@ const fs = require('fs')
 const {Soup, Swallow, SingleFood, Snacks, Drinks, Dish, Protien, Food, Cart} = require('../models/FoodModel')
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
+const ORDER_SERVICE_HOST = process.env.ORDER_SERVICE_HOST || "localhost"
+const ORDER_SERVICE_PORT = process.env.ORDER_SERVICE_PORT || 9600
 
 const buyFood =async(req, res)=>{
     try {
@@ -33,7 +35,7 @@ const buyFood =async(req, res)=>{
         }).then(()=>{
             
             // axios.post("http://orderservice:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
-            axios.post(`http://${process.env.ORDER_SERVICE_HOST}:${process.env.ORDER_SERVICE_PORT}/meal-api/v1/order/placeOrder`, 
+            axios.post(`http://${ORDER_SERVICE_HOST}:${ORDER_SERVICE_PORT}/meal-api/v1/order/placeOrder`, 
                 { user: req.user.email },  
                 { 
                   headers: { 

@@ -1,6 +1,8 @@
 const Delivery = require('../models/Delivery')
 const amqp = require('amqplib')
-const amqpServer = process.env.RABBITMQ_CONNECTION_STRING
+// const amqpServer = process.env.RABBITMQ_CONNECTION_STRING
+const amqpServer = `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@${process.env.RABBITMQ_DEFAULT_HOST}:${process.env.RABBITMQ_DEFAULT_PORT}`
+
 
 const rabbitConnect = async()=>{
     try {

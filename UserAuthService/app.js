@@ -6,7 +6,9 @@ const cors = require('cors')
 const app = express()
 const connectDB = require('./database/db')
 const UserRouter = require('./routes/userRoutes')
+const rabbitConnect = require('./rabbitConnect')
 connectDB()
+rabbitConnect()
 
 app.use(express.static('public'));
 app.set('view engine', 'ejs');

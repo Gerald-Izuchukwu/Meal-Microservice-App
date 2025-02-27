@@ -13,3 +13,8 @@ run the image
 pull the git repository
 npm install
 run containers
+
+
+to make containers lighter
+remove stuff like docker compose, pages, public, views, rabbit.conf, Dockerfile, config.env
+use multistage build

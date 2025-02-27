@@ -7,7 +7,7 @@ const registerServiceWithAWS = (user)=>{
         try {
             const {name, email, password} = user
             const Identities = await listIdentities()
-            console.log(Identities)
+            // console.log(Identities)
             if(Identities.includes(email)){
                 const verifiedEmail = await checkVerifiedEmail(email) //checks the email identity status
                 if(!verifiedEmail){ // if the email is in identities but not verified
@@ -73,27 +73,46 @@ const resetPasswordWithNodemailer = (user)=>{
     })
 }
 
-module.exports = {registerServiceWithAWS, registerServiceWithNodeMailer, resetPasswordWithNodemailer}
+const resetPasswordWithAWS = (user)=>{
+    return new Promise (async(resolve, reject)=>{
+        try {
+            const {email} = user
+            const params = {
+                Source: 'geraldlouisugwunna@gmail.com',
+                Destination: {
+                    ToAddresses: [email],
+                },
+                Message: {
+                    Subject: {
+                    Data: 'Password Reset',
+                    },
+                    Body: {
+                    Text: {
+                        Data: 'Hello from MealApp! This is a password reset link. Kindly follow the link to change your password. If you didnt request for this, please ignore '+ `http://authservice:9602/meal-api/v1/auth/updatepassword?id=${user.id}`,
+                    },
+                    },
+                },
+            };
+            ses.sendEmail(params, (err, data) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(data)
+                }
+            })
+            
+        } catch (error) {
+            console.log(error)
+            reject(error)
+        }
+    })
+    
+}
 
 
 
 
-
-// const result = await registerServiceWithAWS(user)
-// if(result.success){
-//     if(result.emailVerificationRequired){
-//         return res.redirect(200, 'http://authservice:9602/meal-api/v1/auth/success')
-//         // return res.status(200).send('A confirmation link has been sent to your email')
-//     }
-//     else if(!result.emailVerificationRequired){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
-//         return res.redirect(200, '/loginPage')
-//     }
-// }else if(!result.success){
-//     return res.status(400).send('There was an error')
-// }
-
-
-
+module.exports = {registerServiceWithAWS, registerServiceWithNodeMailer, resetPasswordWithNodemailer, resetPasswordWithAWS}
 
 
 

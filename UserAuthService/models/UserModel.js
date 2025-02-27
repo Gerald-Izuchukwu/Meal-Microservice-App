@@ -25,6 +25,7 @@ const UserSchema = new mongoose.Schema({
     },
     email: {
         type:String,
+        unique: true,
         required: true
     },
     password:{
@@ -48,6 +49,17 @@ function generateUniqueUser(){
     const userName = generateUsername('-', 3)
     return userName
 }
+
+UserSchema.pre("save", async function (next) {
+    const existingUser = await this.constructor.findOne({ email: this.email });
+    if (existingUser) {
+        const error = new Error("Email already exists");
+        error.status = 400;
+        return next(error);
+    }
+    next();
+});
+
 
 
 // UserSchema.pre('save', async function(next){

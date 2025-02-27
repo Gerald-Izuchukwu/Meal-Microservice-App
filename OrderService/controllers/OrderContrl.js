@@ -2,6 +2,8 @@ const fs = require('fs')
 const Order = require('../models/OrderModel')
 const rabbitConnect = require('../rabbitConnect')
 const axios = require('axios').default
+const DELIVERY_SERVICE_HOST = process.env.DELIVERY_SERVICE_HOST || "localhost"
+const DELIVERY_SERVICE_PORT = process.env.DELIVERY_SERVICE_PORT || 9603
 
 const calcDeliveryTime = (timestamp, hoursToAdd, minutesToAdd)=>{
     const newDate = new Date(timestamp)
@@ -65,7 +67,7 @@ const placeOrder = async(req, res)=>{
             if (!req.headers.authorization) {
                 return res.status(401).json({ error: "Authorization header is missing" });
             }                     
-            axios.post(`http://${process.env.DELIVERY_SERVICE_HOST}:${process.env.DELIVERY_SERVICE_PORT}/meal-api/v1/delivery/saveOrder`, {}, {headers: {Authorization: req.headers.authorization}})
+            axios.post(`http://${DELIVERY_SERVICE_HOST}:${DELIVERY_SERVICE_PORT}/meal-api/v1/delivery/saveOrder`, {}, {headers: {Authorization: req.headers.authorization}})
         })
 
     } catch (error) {
