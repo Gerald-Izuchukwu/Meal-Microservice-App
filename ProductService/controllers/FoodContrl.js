@@ -34,7 +34,6 @@ const buyFood =async(req, res)=>{
             return
         }).then(()=>{
             
-            // axios.post("http://orderservice:9600/meal-api/v1/order/placeOrder", {user: req.user.email}).catch((err)=>{console.log(err.message);})
             axios.post(`http://${ORDER_SERVICE_HOST}:${ORDER_SERVICE_PORT}/meal-api/v1/order/placeOrder`, 
                 { user: req.user.email },  
                 { 
@@ -174,6 +173,11 @@ const addFood = async(req, res)=>{
                     food: newDrink
                 })
             }
+        }else{
+            res.status(400).json({
+                status: "Bad Request",
+                mesage : "type field incorrectly filled"
+            })
         }
 
     } catch (error) {
@@ -434,7 +438,7 @@ const deleteFood = async (req, res) => {
 
 
 // discount foods
-const getDiscountedFood = async (req, res) => {
+const getDiscountedFood = async (req, res) => { //work on this, discounted food should not have type
     try {
         const { type } = req.query;
         const formatedType = type.toLowerCase()
@@ -498,115 +502,3 @@ module.exports = {
 //update a food (eg, update price)
 // discount a food
 // get all Orders from a user
-// get my most expensive food
-// const mostExpensiveFood = async(req, res)=>{
-//     try {
-//         // get all food
-//         // loop through the food
-//         // get the on with the highest price
-//         // return that food
-//         const {type} = req.query
-//         let foods;
-//         let price;
-//         switch (type) {
-//             case "soups":
-//                 foods = await Soup.find()
-//                 price = foods.soupPrice
-//                 break;
-//             case "snacks":
-//                 foods = await Snacks.find()
-//                 break;
-//             case "swallow":
-//                 foods = await Swallow.find()
-//                 break;
-//             case "singleFood":
-//                 foods = await SingleFood.find()
-//                 break;
-//             case "protien":
-//                 foods = await Protien.find()
-//                 break;
-//             case "drinks":
-//                 foods = await Drinks.find()
-//                 break;
-//             case "dish":
-//                 foods = await Dish.find()
-//                 break;
-//             default:
-//                 break;
-//         }
-//         const mostExpensiveFood = foods.reduce((maxFood, currentFood) => {
-//                 if (!maxFood || currentFood.price > maxFood.price) {
-//                 return currentFood;
-//                 } else {
-//                 return maxFood;
-//                 }
-//             }, 
-//             null
-//         )
-//         return res.status(200).send(mostExpensiveFood)
-
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).send('Internal Server Error ' + error.message)
-//     }
-// }
-
-
-// ---
-
-
-// // get my most expensive food
-// const mostExpensiveFood = async(req, res)=>{
-//     try {
-//         // get all food
-//         // loop through the food
-//         // get the on with the highest price
-//         // return that food
-//         const {type} = req.body
-//         let food;
-//         let price;
-//         switch (type) {
-//             case "Soup":
-//                 food = await Soup.find()
-//                 price = food.price
-//                 break;
-//             case "Snacks":
-//                 food = await Snacks.find()
-//                 break;
-//             case "Swallow":
-//                 food = await Swallow.find()
-//                 break;
-//             case "SingleFood":
-//                 food = await SingleFood.find()
-//                 break;
-//             case "Protien":
-//                 food = await Protien.find()
-//                 break;
-//             case "Drinks":
-//                 food = await Drinks.find()
-//                 break;
-//             case "Dish":
-//                 food = await Dish.find()
-//                 break;
-//             default:
-//                 break;
-//         }
-//         const mostExpensiveFood = food.reduce((maxFood, currentFood) => {
-//             if (!maxFood || currentFood.price > maxFood.price) {
-//                 return currentFood;
-//             } else {
-//                 return maxFood;
-//             }
-
-//         }, null)
-//         if(!mostExpensiveFood){
-//             return res.send("NO food at the moment")
-//         }
-//         return res.status(200).send(mostExpensiveFood)
-
-//     } catch (error) {
-//         console.log(error);
-//         // return res.status(500).send('Internal Server Error ' + error.message)
-//         return res.status(500).send('Internal Server Error ' + "Try later")
-//     }
-// }

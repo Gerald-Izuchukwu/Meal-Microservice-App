@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
-const MONGO_URI  =  process.env.MONGO_URI_DEV
-// const MONGO_URI  = `mongodb://${process.env.MONGO_DB_USERNAME}:${process.env.MONGO_DB_PASSWORD}@mongodb:27017/UserService?authSource=admin` || process.env.MONGO_URI_DEV
+const MONGO_URI  = `mongodb://${process.env.MONGO_DB_USERNAME}:${process.env.MONGO_DB_PASSWORD}@${process.env.MONGO_DB_HOST}:27017/UserService?authSource=admin` || process.env.MONGO_URI_DEV
+// const MONGO_URI  =  process.env.MONGO_URI_DEV
 const connectDB = async ()=>{
     try {
         await mongoose.connect(MONGO_URI)

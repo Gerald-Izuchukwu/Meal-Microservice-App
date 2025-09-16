@@ -5,7 +5,9 @@ const morgan = require('morgan')
 const app = express()
 const connectDB = require('./database/db')
 const DeliveryRouter = require('./routes/index.js')
+const {startDeliveryConsumer} = require('./controllers/DeliveryContrl')
 connectDB()
+startDeliveryConsumer()
 
 app.use(morgan('dev'))
 

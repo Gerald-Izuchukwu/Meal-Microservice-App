@@ -1,7 +1,7 @@
 services:
   mongodb:
     image: mongo:latest
-    container_name: mongodb_container
+    container_name: mongodb
     restart: always
     networks:
       - mynetwork
@@ -61,7 +61,7 @@ services:
     ports:
       - 9600:9600
     env_file:
-      - ./DeliveryService/config.env
+      - ./OrderService/config.env
 
   product-service:
     image: meal_api_product:2.0

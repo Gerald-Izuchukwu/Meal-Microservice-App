@@ -7,6 +7,12 @@ const refresh_secret = process.env.JWT_REFRESH_TOKEN_SECRET_DEV
 const { listIdentities, checkVerifiedEmail} = require('../utils/aws')
 const axios = require('axios').default
 const {registerServiceWithAWS, resetPasswordWithAWS,registerServiceWithNodeMailer, resetPasswordWithNodemailer, } = require('../services/authService.js')
+const authHost = process.env.AUTH_SERVICE_HOST || 'localhost';
+const PORT = process.env.PORT || 9602;
+const client = require('prom-client')
+const clientRegister = client.register;
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics()
 
 const register = async(req, res)=>{
     try { 
@@ -53,9 +59,7 @@ const register = async(req, res)=>{
 }
 
 const callSaveUser = (req, res)=>{
-    axios.post("http://localhost:9602/meal-api/v1/auth/saveuser") //for local dev
-    // axios.post("http://authservice:9602/meal-api/v1/auth/saveuser") //for container
-
+    axios.post(`http://${authHost}:${PORT}/meal-api/v1/auth/saveuser`) //for local dev
 }
 
 const saveUser = async (req, res) => {
@@ -128,7 +132,6 @@ const login = async(req, res)=>{
             )
             res.status(200).json({access_token, payload})
             // return res.redirect(200, 'http://localhost:9601/meal-api/v1/food/home-page') // for local development
-            // // return res.redirect(200, 'http://productservice:9601/meal-api/v1/food/home-page') //for containers
         }
         
     } catch (error) {
@@ -279,50 +282,3 @@ module.exports = {
 //     }
 
 // }
-
-
-//SAVE USER 2
-// const saveUser = async (req, res) => {
-//     try {
-//         const identities = await listIdentities();
-//         const channel = await rabbitConnect();
-        
-//         const data = await channel.get("USER", { noAck: false }); // Get ONE message from queue
-        
-//         if (!data) {
-//             return res.status(404).json({ msg: "No users in queue" });
-//         }
-
-//         try {
-//             const { user } = JSON.parse(data.content);
-//             const { email } = user;
-
-//             if (identities.includes(email)) {
-//                 const isVerified = await checkVerifiedEmail(email);
-
-//                 if (!isVerified) {
-//                     await channel.sendToQueue("USER", Buffer.from(JSON.stringify({ user })));
-//                     console.log('Sending user back to USER queue since user isn’t verified');
-//                     channel.nack(data);
-//                     return res.status(400).json({ msg: "User not verified", user });
-//                 } else {
-//                     await User.create(user);
-//                     channel.ack(data);
-//                     console.log(email, "yes");
-//                     return res.status(201).json({ msg: "User saved", user });
-//                 }
-//             } else {
-//                 channel.ack(data);
-//                 return res.status(400).json({ msg: "User Identity not found", user });
-//             }
-//         } catch (error) {
-//             console.error(error);
-//             channel.nack(data);
-//             return res.status(500).json({ msg: "Error processing user", error });
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ msg: "Internal server error", error });
-//     }
-// };
-

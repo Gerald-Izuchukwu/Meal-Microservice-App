@@ -14,7 +14,6 @@ const calcDeliveryTime = (timestamp, hoursToAdd, minutesToAdd)=>{
 }
 
 
-// place order from already sampled food ----incomplete route
 const placeOrder = async(req, res)=>{
     try {
         const orderArray = []
@@ -221,37 +220,3 @@ module.exports = {
     receivedOrder,
     getPendingOrder
 }
-
-// Routes for V1.2
-// get my most expensive order
-// const sortOrder = async(req, res)=>{
-
-//     try {
-//         const orders = await Order.find()
-
-//     } catch (error) {
-        
-//     }
-// }
-// get my orders from previous months
-// get my order from a particular restuarant
-// get a list of all restaurants, the food and their rating
-// completed order route
-// getFoods()
-
-// //I will find a way to call this function in the placeOrder
-// async function createOrder(food) {
-//     let totalPrice = 0
-//     for(let t=0; t<food.length; t++){
-//         totalPrice += food[t].price
-//     }
-//     const newOrder = await Order.create({
-//         food, 
-//         address : "userAddress", //correct this later to be the main user add
-//         user: req.user.email,
-//         takeOut: true,
-//         paymentOnDelivery: false,
-//         totalPrice: 1000
-//     })
-//     return newOrder
-// }

@@ -1,12 +1,12 @@
 const Delivery = require('../models/Delivery')
 const amqp = require('amqplib')
-// const amqpServer = process.env.RABBITMQ_CONNECTION_STRING
-const amqpServer = `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@${process.env.RABBITMQ_DEFAULT_HOST}:${process.env.RABBITMQ_DEFAULT_PORT}`
+const amqpServer = `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@${process.env.RABBITMQ_DEFAULT_HOST}:${process.env.RABBITMQ_DEFAULT_PORT}` || process.env.RABBITMQ_CONNECTION_STRING
 
 
 const rabbitConnect = async()=>{
     try {
         const connection = await amqp.connect(amqpServer)
+        console.log(amqpServer)
         const channel = await connection.createChannel()
         channel.assertQueue('DELIVERY')
         return channel
@@ -56,31 +56,34 @@ const acceptToDeliverOrder = async(req, res)=>{
 
 }
 
-const saveOrderToDatabase = async(req, res)=>{ // saving order to database 
+async function startDeliveryConsumer() {
+    const channel = await rabbitConnect();
+    channel.consume("DELIVERY", async (data) => {
+        console.log("Consuming from DELIVERY queue");
+
+        const { order } = JSON.parse(data.content);
+        const { paymentOnDelivery, estimatedDeliveryTime, assignedTo, delivered, address } = order;
+
+        const delivery = {
+            Order: order,
+            PaymentOnDelivery: paymentOnDelivery,
+            EstimatedDeliveryTime: estimatedDeliveryTime,
+            DeliveredBy: assignedTo,
+            Address: address,
+            Delivered: delivered,
+        };
+
+        await Delivery.create(delivery);
+        console.log("Delivery Saved to Database");
+
+        channel.ack(data);
+    });
+}
+
+const saveOrderToDatabase = async(req,res)=>{
     try {
-        rabbitConnect().then((channel)=>{
-            channel.consume("DELIVERY", (data)=>{
-                console.log('Consuming from DELIVERY queue');
-                const {order} = JSON.parse(data.content)
-                const {paymentOnDelivery,estimatedDeliveryTime, assignedTo, delivered,  address} = order
-                const delivery = {
-                    Order : order, 
-                    PaymentOnDelivery: paymentOnDelivery,
-                    EstimatedDeliveryTime: estimatedDeliveryTime,
-                    DeliveredBy: assignedTo,
-                    Address: address,
-                    Delivered: delivered
-                }
-                Delivery.create(delivery)
-                console.log('Delivery Saved to Database')
-                res.status(201).json({msg: "delivery saved", delivery})
-                channel.ack(data)
-            })
-            setTimeout(()=>{
-                channel.close()
-            }, 4000)
-        })
-        // res.status(201).json({msg: "delivery saved", delivery})
+        res.status(200).json({msg: "dDelivery Service is Listening for Orders to be saved"})
+        
     } catch (error) {
         console.log(error)
         return res.status(500).send('Internal Server Error ' + error.message)
@@ -115,4 +118,4 @@ const deliveryComplete = async(req, res)=>{
     }
 }    
 
-module.exports = { getPendingOrder, saveOrderToDatabase, deliveryComplete, acceptToDeliverOrder}
+module.exports = { getPendingOrder, saveOrderToDatabase, deliveryComplete, acceptToDeliverOrder, startDeliveryConsumer }
