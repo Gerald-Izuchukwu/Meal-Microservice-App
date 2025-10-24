@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: general-service-configmap
+  namespace: mealappapi
+data:
+  MONGO_DB_HOST: "mongodb"
+  MONGO_DB_PORT: "27017"
+  RABBITMQ_DEFAULT_HOST: "rabbitmq"
+  RABBITMQ_DEFAULT_PORT: "5672"
+  AWS_Region: "us-east-1"
+  ORDER_SERVICE_PORT: "9600"
+  ORDER_SERVICE_HOST: "order-service"
+  PRODUCT_SERVICE_HOST: "product-service"
+  PRODUCT_SERVICE_PORT: "9601"
+  DELIVERY_SERVICE_HOST: "delivery-service"
+  DELIVERY_SERVICE_PORT: "9603"
+  AUTH_SERVICE_HOST: "auth-service"
+  AUTH_SERVICE_PORT: "9602"

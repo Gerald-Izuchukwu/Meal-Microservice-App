@@ -4,3 +4,7 @@ ideas
 test.js
 rabbitmq.conf
 test.txt
+Infrastructure/K8_scripts/secrets.yaml
+Infrastructure/K8_scripts/rabbitmq-config.yaml
+devops_sre_12week_trello.json
+i.json

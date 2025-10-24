@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  namespace: mealappapi
+  labels:
+    app: mongodb
+    creator: padre
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      name: mongodb-pod
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: MONGO_DB_USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: MONGO_DB_PASSWORD
+        - name: MONGO_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: MONGO_DB_HOST
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: mealappapi
+  labels:
+    app: mongodb
+    creator: padre
+spec:
+  selector:
+    app: mongodb
+  ports:
+  - protocol: TCP
+    port: 27017
+    targetPort: 27017
+  type: ClusterIP

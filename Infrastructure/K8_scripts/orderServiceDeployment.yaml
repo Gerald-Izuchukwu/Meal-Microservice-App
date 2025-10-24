@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service-deployment
+  labels:
+    app: order-service
+  namespace: mealappapi
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      name: order-service-pod
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - name: order-service-container
+        image: gerald22/meal_api_order:3.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9601
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: ORDER_SERVICE_PORT
+        - name: order_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: ORDER_SERVICE_HOST
+        - name: MONGO_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: MONGO_DB_USERNAME
+        - name: MONGO_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: MONGO_DB_PASSWORD
+        - name: MONGO_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: MONGO_DB_HOST
+        - name: MONGO_DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: MONGO_DB_PORT
+        - name: RABBITMQ_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: RABBITMQ_DEFAULT_USER
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: RABBITMQ_DEFAULT_PASS
+        - name: RABBITMQ_DEFAULT_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: RABBITMQ_DEFAULT_HOST
+        - name: RABBITMQ_DEFAULT_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: RABBITMQ_DEFAULT_PORT
+        - name: JWT_ACCESS_TOKEN_SECRET_DEV
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: JWT_ACCESS_TOKEN_SECRET_DEV
+        - name: JWT_REFRESH_TOKEN_SECRET_DEV
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: JWT_REFRESH_TOKEN_SECRET_DEV
+        - name: JWTSECRET
+          valueFrom:
+            secretKeyRef:
+              name: general-microservice-secrets
+              key: JWTSECRET
+        - name: PRODUCT_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: PRODUCT_SERVICE_HOST
+        - name: PRODUCT_SERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: PRODUCT_SERVICE_PORT
+        - name: DELIVERY_SERVICE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: DELIVERY_SERVICE_HOST
+        - name: DELIVERY_SERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: general-service-configmap
+              key: DELIVERY_SERVICE_PORT
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: mealappapi
+spec:
+  selector:
+    app: order-service
+  ports:
+  - protocol: TCP
+    port: 9600
+    targetPort: 9600
+  type: ClusterIP
