@@ -26,7 +26,7 @@ const register = async(req, res)=>{
         const user = {
             name, email, password, role
         }
-        // console.log(user)
+        // console.log(user)   //delete this block as it repeats in the service on line 42-45
         await rabbitConnect().then((channel)=>{
             channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
             console.log('Sending user to USER queue');

@@ -8,3 +8,4 @@ Infrastructure/K8_scripts/secrets.yaml
 Infrastructure/K8_scripts/rabbitmq-config.yaml
 devops_sre_12week_trello.json
 i.json
+Infrastructure/K8_scripts/microservice-chart
