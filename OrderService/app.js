@@ -15,6 +15,13 @@ app.use(morgan('dev'))
 app.use(express.urlencoded({extended: false}))
 app.use(express.json())
 
+app.get('/meal-api/v1/order/health', (req, res)=>{
+    res.status(200).json({
+        status: "success",
+        message: "Order Service is running"
+    })
+})
+
 //mounting routers
 app.use('/meal-api/v1/order/', OrderRouter)
 

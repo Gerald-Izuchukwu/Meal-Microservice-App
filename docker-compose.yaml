@@ -112,7 +112,31 @@ services:
       - ./DeliveryService/config.env
 
 
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-gateway
+    restart: always
+    networks:
+      - mynetwork
+    ports:
+      - 8084:8084
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      user-auth-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+      delivery-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+
 networks:
   mynetwork:
     driver: bridge
 
+
+
+#later add health checks for the services and make the nginx depend on the health of the services instead of just starting

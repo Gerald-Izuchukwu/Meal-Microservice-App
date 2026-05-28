@@ -15,6 +15,12 @@ app.use(express.urlencoded({extended: false}))
 app.use(express.json())
 
 //mounting routers
+app.get('/meal-api/v1/delivery/health', (req, res)=>{
+    res.status(200).json({
+        status: "success",
+        message: "Delivery Service is running"
+    })
+})
 app.use('/meal-api/v1/delivery/', DeliveryRouter)
 
 const PORT = process.env.PORT || 9603
