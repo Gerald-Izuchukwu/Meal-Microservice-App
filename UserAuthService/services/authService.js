@@ -12,16 +12,16 @@ const registerServiceWithAWS = (user)=>{
                 const verifiedEmail = await checkVerifiedEmail(email) //checks the email identity status
                 if(!verifiedEmail){ // if the email is in identities but not verified
                     ses.verifyEmailIdentity({EmailAddress: email}).send()
-                    resolve({success: true, emailVerficationRequired: true})
+                    resolve({success: true, emailVerificationRequired: true})
 
                 }else if(verifiedEmail){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
                     console.log("email is verified")
                     await User.create(user) //incase something happens to our identity list
-                    resolve({success: true, emailVerficationRequired: false})
+                    resolve({success: true, emailVerificationRequired: false})
                 }
             }else{
                 ses.verifyEmailIdentity({EmailAddress: email}).send()
-                resolve({success: true,  emailVerficationRequired: true})
+                resolve({success: true,  emailVerificationRequired: true})
             }
         } catch (error) {
             console.log(error)

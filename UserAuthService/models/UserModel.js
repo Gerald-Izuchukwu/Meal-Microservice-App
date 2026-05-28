@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const moniker = require('moniker')
 const { generateUsername } = require("unique-username-generator");
 

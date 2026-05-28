@@ -18,6 +18,13 @@ app.use(morgan('dev'))
 app.use(express.urlencoded({extended: false}))
 app.use(express.json())
 
+app.get('/meal-api/v1/auth/health', (req, res)=>{
+    res.status(200).json({
+        status: "success",
+        message: "User-Auth Service is running"
+    })
+})
+
 //mounting routers
 app.use('/meal-api/v1/auth/', UserRouter)
 app.get('./', (res, req)=>{

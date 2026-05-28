@@ -21,3 +21,5 @@ router.route('/discountedFoods').get(getDiscountedFood)
 router.route("/add-to-cart").post(addToCart)
 router.route("/:id").get(isAuthenticated, getAFood).delete(isAuthenticated, isAdmin, deleteFood).put(isAuthenticated,isAdmin,updateFood)
 module.exports = router
+// 6a17f8cb633f933474bedb1b
+// 6a17f90d633f933474bedb1d

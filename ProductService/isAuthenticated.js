@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const secret = process.env.JWTSECRET
+const secret = process.env.JWT_ACCESS_TOKEN_SECRET
 async function isAuthenticated(req, res, next){
     // creating header to be "Bearer <token>", if its splited using space " ", then it becomes an array of two elem - Bearer and token
     const token = req.headers["authorization"].split(" ")[1]

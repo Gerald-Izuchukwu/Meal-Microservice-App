@@ -1,9 +1,9 @@
 const User = require('../models/UserModel')
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const rabbitConnect = require('../rabbitConnect')
-const access_secret = process.env.JWT_ACCESS_TOKEN_SECRET_DEV
-const refresh_secret = process.env.JWT_REFRESH_TOKEN_SECRET_DEV
+const access_secret = process.env.JWT_ACCESS_TOKEN_SECRET
+const refresh_secret = process.env.JWT_REFRESH_TOKEN
 const { listIdentities, checkVerifiedEmail} = require('../utils/aws')
 const axios = require('axios').default
 const {registerServiceWithAWS, resetPasswordWithAWS,registerServiceWithNodeMailer, resetPasswordWithNodemailer, } = require('../services/authService.js')
@@ -35,7 +35,7 @@ const register = async(req, res)=>{
 
         const result = await registerServiceWithAWS(user)
         // const result = await registerServiceWithNodeMailer(user)
-        console.log(result)
+        console.log('Full result:', JSON.stringify(result, null, 2))
         if(result.success){
             if(result.emailVerificationRequired){
                 console.log(user)
@@ -47,9 +47,9 @@ const register = async(req, res)=>{
                 return res.status(200).send('A confirmation link has been sent to your email')
             }
             else if(!(result.emailVerificationRequired)){ //if the user's email is already verfied and it is not in the database, just proceed to create the user profile
-                return res.status(200).send('A confirmation link has been sent to your email')
+                return res.status(200).send('You can now login ')
             }
-        }else if(!(result.success)){
+        }else if(!(result.success)){    
             return res.status(400).send('There was an error in creating this user')
         }
     }catch(error){
@@ -59,7 +59,8 @@ const register = async(req, res)=>{
 }
 
 const callSaveUser = (req, res)=>{
-    axios.post(`http://${authHost}:${PORT}/meal-api/v1/auth/saveuser`) //for local dev
+    // axios.post(`http://localhost:9602/meal-api/v1/auth/saveuser`) //for local dev
+    axios.post(`http://${authHost}:${PORT}/meal-api/v1/auth/saveuser`) 
 }
 
 const saveUser = async (req, res) => {

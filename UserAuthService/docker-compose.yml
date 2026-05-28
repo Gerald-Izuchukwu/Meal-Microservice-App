@@ -46,7 +46,7 @@ services:
       retries: 5
 
   user-auth-service:
-    image: meal_api_user_auth:2.0
+    image: meal_api_auth:latest
     container_name: authservice
     depends_on:
       - rabbitmq

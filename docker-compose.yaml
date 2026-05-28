@@ -48,7 +48,7 @@ services:
       retries: 5
 
   order-service:
-    image: meal_api_order:2.0
+    image: meal_api_orderservice:latest
     container_name: orderservice
     depends_on:
       rabbitmq:
@@ -64,7 +64,7 @@ services:
       - ./OrderService/config.env
 
   product-service:
-    image: meal_api_product:2.0
+    image: meal_api_productservice:latest
     container_name: productservice
     depends_on:
       rabbitmq:
@@ -80,7 +80,7 @@ services:
       - ./ProductService/config.env
 
   user-auth-service:
-    image: meal_api_auth:2.0
+    image: meal_api_authservice:latest
     container_name: authservice
     depends_on:
       rabbitmq:
@@ -96,7 +96,7 @@ services:
       - ./UserAuthService/config.env
 
   delivery-service:
-    image: meal_api_delivery:2.0
+    image: meal_api_deliveryservice:latest
     container_name: deliveryservice
     depends_on:
       rabbitmq:
