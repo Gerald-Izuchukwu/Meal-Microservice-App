@@ -1,5 +1,6 @@
 FROM node:20-alpine
 
+RUN apk add --no-cache curl
 
 RUN mkdir -p /home/order-service
 

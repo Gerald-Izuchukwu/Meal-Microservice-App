@@ -19,6 +19,7 @@ COPY package*.json ./
 RUN npm install --only=production && npm cache clean --force
 
 FROM node:20-alpine
+RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .

@@ -20,6 +20,7 @@ RUN npm ci --only=production && npm cache clean --force
 
 
 FROM node:18-alpine 
+RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .
