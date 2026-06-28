@@ -10,9 +10,10 @@ const {isAuthenticated} = require('../isAuthenticated')
 router.route('/register').post(register)
 router.route('/saveuser').post(saveUser).get(callSaveUser)
 router.route('/login').post(login)
-router.route('/:id').get(getUserByID).put(updatePassword)
 router.route('/resetpassword').post(resetPassword)
 router.route('/logout').delete(signOut)
+router.route('/:id').get(getUserByID).put(updatePassword)
+
 
 
 module.exports = router

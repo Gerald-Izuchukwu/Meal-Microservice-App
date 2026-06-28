@@ -1,0 +1,239 @@
+# =============================================================================
+# CI PIPELINE — Meal Microservice App
+# Triggers on: push / PR to main
+# Jobs: detect changed services → lint → trivy scan → test
+# On success: calls CD pipeline via workflow_call
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs on the same branch when a new push comes in
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ===========================================================================
+  # JOB 1 — Detect which services changed
+  # Only services with changed files will be built/deployed.
+  # This prevents a UserAuthService fix from redeploying DeliveryService.
+  # ===========================================================================
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      auth:     ${{ steps.filter.outputs.auth }}
+      product:  ${{ steps.filter.outputs.product }}
+      delivery: ${{ steps.filter.outputs.delivery }}
+      order:    ${{ steps.filter.outputs.order }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for accurate diff detection
+
+      - name: Detect changed service folders
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            auth:
+              - 'UserAuthService/**'
+            product:
+              - 'ProductService/**'
+            delivery:
+              - 'DeliveryService/**'
+            order:
+              - 'OrderService/**'
+
+
+  # ===========================================================================
+  # JOB 2 — Lint
+  # Runs npm run lint for each changed service in parallel.
+  # Falls back gracefully if no lint script is defined in package.json.
+  # ===========================================================================
+  lint:
+    name: Lint — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.auth == 'true' ||
+      needs.detect-changes.outputs.product == 'true' ||
+      needs.detect-changes.outputs.delivery == 'true' ||
+      needs.detect-changes.outputs.order == 'true'
+    strategy:
+      matrix:
+        include:
+          - service: UserAuthService
+            changed: ${{ needs.detect-changes.outputs.auth }}
+          - service: ProductService
+            changed: ${{ needs.detect-changes.outputs.product }}
+          - service: DeliveryService
+            changed: ${{ needs.detect-changes.outputs.delivery }}
+          - service: OrderService
+            changed: ${{ needs.detect-changes.outputs.order }}
+    steps:
+      - name: Skip if service unchanged
+        if: matrix.changed != 'true'
+        run: echo "No changes in ${{ matrix.service }}, skipping."
+
+      - name: Checkout code
+        if: matrix.changed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: matrix.changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: ${{ matrix.service }}/package-lock.json
+
+      - name: Install dependencies
+        if: matrix.changed == 'true'
+        working-directory: ${{ matrix.service }}
+        run: npm ci
+
+      - name: Run lint
+        if: matrix.changed == 'true'
+        working-directory: ${{ matrix.service }}
+        # If no lint script exists in package.json, skip gracefully
+        run: npm run lint --if-present
+
+
+  # ===========================================================================
+  # JOB 3 — Trivy Security Scan
+  # Scans each changed service directory for vulnerabilities in:
+  #   - npm dependencies (package-lock.json)
+  #   - Secrets accidentally committed (.env files, keys, etc)
+  # Severity threshold: CRITICAL and HIGH fail the build.
+  # ===========================================================================
+  trivy-scan:
+    name: Trivy Scan — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.auth == 'true' ||
+      needs.detect-changes.outputs.product == 'true' ||
+      needs.detect-changes.outputs.delivery == 'true' ||
+      needs.detect-changes.outputs.order == 'true'
+    strategy:
+      matrix:
+        include:
+          - service: UserAuthService
+            changed: ${{ needs.detect-changes.outputs.auth }}
+          - service: ProductService
+            changed: ${{ needs.detect-changes.outputs.product }}
+          - service: DeliveryService
+            changed: ${{ needs.detect-changes.outputs.delivery }}
+          - service: OrderService
+            changed: ${{ needs.detect-changes.outputs.order }}
+    steps:
+      - name: Skip if service unchanged
+        if: matrix.changed != 'true'
+        run: echo "No changes in ${{ matrix.service }}, skipping."
+
+      - name: Checkout code
+        if: matrix.changed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scan
+        if: matrix.changed == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: ${{ matrix.service }}
+          severity: CRITICAL,HIGH
+          exit-code: 1                  # Fail pipeline on CRITICAL/HIGH findings
+          ignore-unfixed: true          # Ignore vulns with no fix available yet
+          format: table                 # Human-readable output in Actions log
+
+      - name: Run Trivy secret scan
+        if: matrix.changed == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: ${{ matrix.service }}
+          scanners: secret              # Scan for accidentally committed secrets
+          exit-code: 1
+          format: table
+
+
+  # ===========================================================================
+  # JOB 4 — Test
+  # Placeholder — no tests written yet.
+  # Add your test logic here when ready. Pipeline will not fail without tests.
+  # ===========================================================================
+  test:
+    name: Test — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.auth == 'true' ||
+      needs.detect-changes.outputs.product == 'true' ||
+      needs.detect-changes.outputs.delivery == 'true' ||
+      needs.detect-changes.outputs.order == 'true'
+    strategy:
+      matrix:
+        include:
+          - service: UserAuthService
+            changed: ${{ needs.detect-changes.outputs.auth }}
+          - service: ProductService
+            changed: ${{ needs.detect-changes.outputs.product }}
+          - service: DeliveryService
+            changed: ${{ needs.detect-changes.outputs.delivery }}
+          - service: OrderService
+            changed: ${{ needs.detect-changes.outputs.order }}
+    steps:
+      - name: Skip if service unchanged
+        if: matrix.changed != 'true'
+        run: echo "No changes in ${{ matrix.service }}, skipping."
+
+      - name: Checkout code
+        if: matrix.changed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: matrix.changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: ${{ matrix.service }}/package-lock.json
+
+      - name: Install dependencies
+        if: matrix.changed == 'true'
+        working-directory: ${{ matrix.service }}
+        run: npm ci
+
+      - name: Run tests
+        if: matrix.changed == 'true'
+        working-directory: ${{ matrix.service }}
+        # --if-present skips gracefully if no test script is defined
+        run: npm test --if-present
+
+
+  # ===========================================================================
+  # JOB 5 — Call CD pipeline
+  # Only triggers on push to main (not PRs) and only if all CI jobs passed.
+  # Passes which services changed as inputs to the CD pipeline.
+  # ===========================================================================
+  call-cd:
+    name: Trigger CD
+    needs: [detect-changes, lint, trivy-scan, test]
+    # Only deploy on actual push to main, not on pull requests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/cd.yml
+    with:
+      deploy_auth:     ${{ needs.detect-changes.outputs.auth == 'true' }}
+      deploy_product:  ${{ needs.detect-changes.outputs.product == 'true' }}
+      deploy_delivery: ${{ needs.detect-changes.outputs.delivery == 'true' }}
+      deploy_order:    ${{ needs.detect-changes.outputs.order == 'true' }}
+    secrets: inherit  # Pass all repo secrets through to CD pipeline
