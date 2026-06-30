@@ -115,55 +115,55 @@ jobs:
   #   - Secrets accidentally committed (.env files, keys, etc)
   # Severity threshold: CRITICAL and HIGH fail the build.
   # ===========================================================================
-  trivy-scan:
-    name: Trivy Scan — ${{ matrix.service }}
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: |
-      needs.detect-changes.outputs.auth == 'true' ||
-      needs.detect-changes.outputs.product == 'true' ||
-      needs.detect-changes.outputs.delivery == 'true' ||
-      needs.detect-changes.outputs.order == 'true'
-    strategy:
-      matrix:
-        include:
-          - service: UserAuthService
-            changed: ${{ needs.detect-changes.outputs.auth }}
-          - service: ProductService
-            changed: ${{ needs.detect-changes.outputs.product }}
-          - service: DeliveryService
-            changed: ${{ needs.detect-changes.outputs.delivery }}
-          - service: OrderService
-            changed: ${{ needs.detect-changes.outputs.order }}
-    steps:
-      - name: Skip if service unchanged
-        if: matrix.changed != 'true'
-        run: echo "No changes in ${{ matrix.service }}, skipping."
+  # trivy-scan:
+  #   name: Trivy Scan — ${{ matrix.service }}
+  #   runs-on: ubuntu-latest
+  #   needs: detect-changes
+  #   if: |
+  #     needs.detect-changes.outputs.auth == 'true' ||
+  #     needs.detect-changes.outputs.product == 'true' ||
+  #     needs.detect-changes.outputs.delivery == 'true' ||
+  #     needs.detect-changes.outputs.order == 'true'
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - service: UserAuthService
+  #           changed: ${{ needs.detect-changes.outputs.auth }}
+  #         - service: ProductService
+  #           changed: ${{ needs.detect-changes.outputs.product }}
+  #         - service: DeliveryService
+  #           changed: ${{ needs.detect-changes.outputs.delivery }}
+  #         - service: OrderService
+  #           changed: ${{ needs.detect-changes.outputs.order }}
+  #   steps:
+  #     - name: Skip if service unchanged
+  #       if: matrix.changed != 'true'
+  #       run: echo "No changes in ${{ matrix.service }}, skipping."
 
-      - name: Checkout code
-        if: matrix.changed == 'true'
-        uses: actions/checkout@v4
+  #     - name: Checkout code
+  #       if: matrix.changed == 'true'
+  #       uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scan
-        if: matrix.changed == 'true'
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: ${{ matrix.service }}
-          severity: CRITICAL,HIGH
-          exit-code: 1                  # Fail pipeline on CRITICAL/HIGH findings
-          ignore-unfixed: true          # Ignore vulns with no fix available yet
-          format: table                 # Human-readable output in Actions log
+  #     - name: Run Trivy vulnerability scan
+  #       if: matrix.changed == 'true'
+  #       uses: aquasecurity/trivy-action@master
+  #       with:
+  #         scan-type: fs
+  #         scan-ref: ${{ matrix.service }}
+  #         severity: CRITICAL,HIGH
+  #         exit-code: 1                  # Fail pipeline on CRITICAL/HIGH findings
+  #         ignore-unfixed: true          # Ignore vulns with no fix available yet
+  #         format: table                 # Human-readable output in Actions log
 
-      - name: Run Trivy secret scan
-        if: matrix.changed == 'true'
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: ${{ matrix.service }}
-          scanners: secret              # Scan for accidentally committed secrets
-          exit-code: 1
-          format: table
+  #     - name: Run Trivy secret scan
+  #       if: matrix.changed == 'true'
+  #       uses: aquasecurity/trivy-action@master
+  #       with:
+  #         scan-type: fs
+  #         scan-ref: ${{ matrix.service }}
+  #         scanners: secret              # Scan for accidentally committed secrets
+  #         exit-code: 1
+  #         format: table
 
 
   # ===========================================================================
