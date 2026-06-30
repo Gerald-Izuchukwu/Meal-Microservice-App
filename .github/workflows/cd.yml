@@ -60,7 +60,6 @@ jobs:
             pm2 save
             echo "==> UserAuthService deployed successfully"
 
-
   # ===========================================================================
   # JOB 2 — Deploy ProductService
   # ===========================================================================
@@ -93,7 +92,6 @@ jobs:
 
             pm2 save
             echo "==> ProductService deployed successfully"
-
 
   # ===========================================================================
   # JOB 3 — Deploy DeliveryService
@@ -128,7 +126,6 @@ jobs:
             pm2 save
             echo "==> DeliveryService deployed successfully"
 
-
   # ===========================================================================
   # JOB 4 — Deploy OrderService
   # ===========================================================================
@@ -161,7 +158,6 @@ jobs:
 
             pm2 save
             echo "==> OrderService deployed successfully"
-
 
   # ===========================================================================
   # JOB 5 — Verify deployments
