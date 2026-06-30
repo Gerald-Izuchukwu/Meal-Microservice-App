@@ -17,7 +17,6 @@ collectDefaultMetrics()
 const register = async(req, res)=>{
     try { 
         const {name, email, password, role} = req.body;
-        // console.log(req.body)
         const userExists = await User.findOne({email})
         if(userExists){
             console.log('This user exists');
@@ -59,7 +58,6 @@ const register = async(req, res)=>{
 }
 
 const callSaveUser = (req, res)=>{
-    // axios.post(`http://localhost:9602/meal-api/v1/auth/saveuser`) //for local dev
     axios.post(`http://${authHost}:${PORT}/meal-api/v1/auth/saveuser`) 
 }
 
