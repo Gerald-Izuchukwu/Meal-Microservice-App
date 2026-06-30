@@ -1,7 +1,7 @@
 # =============================================================================
 # CD PIPELINE — Meal Microservice App
 # Triggered by: ci.yml (workflow_call) after all CI jobs pass
-# Jobs: SSH into EC2 → git pull → npm install → pm2 restart
+# Jobs: SSH into EC2 → pull SSM config → git clone/pull → npm ci → pm2 restart
 # Only deploys services that actually changed (passed in as inputs from CI)
 # =============================================================================
 
@@ -36,29 +36,41 @@ jobs:
       - name: Deploy UserAuthService to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host:        ${{ secrets.EC2_HOST }}
-          username:    ${{ secrets.EC2_USER }}
-          key:         ${{ secrets.EC2_SSH_KEY }}
+          host:     ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key:      ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -euo pipefail
 
-            echo "==> Pulling latest code..."
-            cd /home/ubuntu/Meal-Microservice-App
-            git pull origin main
+            echo "==> Ensuring repo is present..."
+            if [ -d "/home/ubuntu/Meal-Microservice-App/.git" ]; then
+              cd /home/ubuntu/Meal-Microservice-App
+              git pull origin main
+            else
+              git clone https://github.com/Gerald-Izuchukwu/Meal-Microservice-App.git /home/ubuntu/Meal-Microservice-App
+              cd /home/ubuntu/Meal-Microservice-App
+            fi
+
+            echo "==> Pulling config from SSM..."
+            aws ssm get-parameter \
+              --name "/meal-app/auth/config.env" \
+              --with-decryption \
+              --region us-east-1 \
+              --query "Parameter.Value" \
+              --output text > /home/ubuntu/Meal-Microservice-App/UserAuthService/config.env
 
             echo "==> Installing dependencies..."
-            cd UserAuthService
+            cd /home/ubuntu/Meal-Microservice-App/UserAuthService
             npm ci --omit=dev
 
             echo "==> Restarting service with PM2..."
-            # 'restart' works whether the process is running or not
-            # If first deploy, use 'start' fallback
             pm2 describe auth-service > /dev/null 2>&1 \
               && pm2 restart auth-service \
               || pm2 start app.js --name auth-service --cwd /home/ubuntu/Meal-Microservice-App/UserAuthService
 
             pm2 save
             echo "==> UserAuthService deployed successfully"
+
 
   # ===========================================================================
   # JOB 2 — Deploy ProductService
@@ -71,18 +83,31 @@ jobs:
       - name: Deploy ProductService to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host:        ${{ secrets.EC2_HOST }}
-          username:    ${{ secrets.EC2_USER }}
-          key:         ${{ secrets.EC2_SSH_KEY }}
+          host:     ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key:      ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -euo pipefail
 
-            echo "==> Pulling latest code..."
-            cd /home/ubuntu/Meal-Microservice-App
-            git pull origin main
+            echo "==> Ensuring repo is present..."
+            if [ -d "/home/ubuntu/Meal-Microservice-App/.git" ]; then
+              cd /home/ubuntu/Meal-Microservice-App
+              git pull origin main
+            else
+              git clone https://github.com/Gerald-Izuchukwu/Meal-Microservice-App.git /home/ubuntu/Meal-Microservice-App
+              cd /home/ubuntu/Meal-Microservice-App
+            fi
+
+            echo "==> Pulling config from SSM..."
+            aws ssm get-parameter \
+              --name "/meal-app/product/config.env" \
+              --with-decryption \
+              --region us-east-1 \
+              --query "Parameter.Value" \
+              --output text > /home/ubuntu/Meal-Microservice-App/ProductService/config.env
 
             echo "==> Installing dependencies..."
-            cd ProductService
+            cd /home/ubuntu/Meal-Microservice-App/ProductService
             npm ci --omit=dev
 
             echo "==> Restarting service with PM2..."
@@ -92,6 +117,7 @@ jobs:
 
             pm2 save
             echo "==> ProductService deployed successfully"
+
 
   # ===========================================================================
   # JOB 3 — Deploy DeliveryService
@@ -104,18 +130,31 @@ jobs:
       - name: Deploy DeliveryService to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host:        ${{ secrets.EC2_HOST }}
-          username:    ${{ secrets.EC2_USER }}
-          key:         ${{ secrets.EC2_SSH_KEY }}
+          host:     ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key:      ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -euo pipefail
 
-            echo "==> Pulling latest code..."
-            cd /home/ubuntu/Meal-Microservice-App
-            git pull origin main
+            echo "==> Ensuring repo is present..."
+            if [ -d "/home/ubuntu/Meal-Microservice-App/.git" ]; then
+              cd /home/ubuntu/Meal-Microservice-App
+              git pull origin main
+            else
+              git clone https://github.com/Gerald-Izuchukwu/Meal-Microservice-App.git /home/ubuntu/Meal-Microservice-App
+              cd /home/ubuntu/Meal-Microservice-App
+            fi
+
+            echo "==> Pulling config from SSM..."
+            aws ssm get-parameter \
+              --name "/meal-app/delivery/config.env" \
+              --with-decryption \
+              --region us-east-1 \
+              --query "Parameter.Value" \
+              --output text > /home/ubuntu/Meal-Microservice-App/DeliveryService/config.env
 
             echo "==> Installing dependencies..."
-            cd DeliveryService
+            cd /home/ubuntu/Meal-Microservice-App/DeliveryService
             npm ci --omit=dev
 
             echo "==> Restarting service with PM2..."
@@ -125,6 +164,7 @@ jobs:
 
             pm2 save
             echo "==> DeliveryService deployed successfully"
+
 
   # ===========================================================================
   # JOB 4 — Deploy OrderService
@@ -137,18 +177,31 @@ jobs:
       - name: Deploy OrderService to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host:        ${{ secrets.EC2_HOST }}
-          username:    ${{ secrets.EC2_USER }}
-          key:         ${{ secrets.EC2_SSH_KEY }}
+          host:     ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key:      ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -euo pipefail
 
-            echo "==> Pulling latest code..."
-            cd /home/ubuntu/Meal-Microservice-App
-            git pull origin main
+            echo "==> Ensuring repo is present..."
+            if [ -d "/home/ubuntu/Meal-Microservice-App/.git" ]; then
+              cd /home/ubuntu/Meal-Microservice-App
+              git pull origin main
+            else
+              git clone https://github.com/Gerald-Izuchukwu/Meal-Microservice-App.git /home/ubuntu/Meal-Microservice-App
+              cd /home/ubuntu/Meal-Microservice-App
+            fi
+
+            echo "==> Pulling config from SSM..."
+            aws ssm get-parameter \
+              --name "/meal-app/order/config.env" \
+              --with-decryption \
+              --region us-east-1 \
+              --query "Parameter.Value" \
+              --output text > /home/ubuntu/Meal-Microservice-App/OrderService/config.env
 
             echo "==> Installing dependencies..."
-            cd OrderService
+            cd /home/ubuntu/Meal-Microservice-App/OrderService
             npm ci --omit=dev
 
             echo "==> Restarting service with PM2..."
@@ -159,16 +212,15 @@ jobs:
             pm2 save
             echo "==> OrderService deployed successfully"
 
+
   # ===========================================================================
   # JOB 5 — Verify deployments
   # Runs after all deploy jobs complete (whether they ran or were skipped)
-  # Hits the health endpoint to confirm nginx + services are still up
   # ===========================================================================
   verify:
     name: Verify Deployment
     runs-on: ubuntu-latest
     needs: [deploy-auth, deploy-product, deploy-delivery, deploy-order]
-    # Run verify even if some deploy jobs were skipped
     if: always()
     steps:
       - name: Health check

@@ -1,13 +1,15 @@
 const AWS = require('aws-sdk')
 
 
-AWS.config.update({
-    accessKeyId: process.env.AWS_AccessKeyID,
-    secretAccessKey: process.env.AWS_SecretAccessKey,
-    region: process.env.AWS_Region
-})
+// AWS.config.update({
+//     accessKeyId: process.env.AWS_AccessKeyID,
+//     secretAccessKey: process.env.AWS_SecretAccessKey,
+//     region: process.env.AWS_Region
+// })
 
-const ses = new AWS.SES({})
+
+
+const ses = new AWS.SES({region: process.env.region})
 // const ses = new AWS.SES({region: '2010-12-01'})
 
 const listIdentities = () =>{
