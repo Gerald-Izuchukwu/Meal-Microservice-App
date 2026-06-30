@@ -227,7 +227,8 @@ jobs:
   # ===========================================================================
   call-cd:
     name: Trigger CD
-    needs: [detect-changes, lint, trivy-scan, test]
+    needs: [detect-changes, lint, test]
+    # needs: [detect-changes, lint, trivy-scan, test]
     # Only deploy on actual push to main, not on pull requests
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/cd.yml

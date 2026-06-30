@@ -19,7 +19,6 @@ const placeOrder = async(req, res)=>{
         const orderArray = []
         await rabbitConnect().then((channel)=>{
             channel.consume("ORDER", data=>{
-                // const {food, timestamp} = JSON.parse(data.content.dataToSend)
                 const {dataToSend} = JSON.parse(data.content)
                 const {food, timestamp} = dataToSend
                 const user = req.body.user
