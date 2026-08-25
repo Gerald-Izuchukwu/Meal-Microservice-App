@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"No tests yet\" && exit 0",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "seed": "MONGO_DB_HOST=localhost node seeder.js"
   },
   "keywords": [],
   "author": "",
