@@ -1,0 +1,52 @@
+[
+{
+    "name"     : "meal-app_product-service",
+    "image "   : "058264369379.dkr.ecr.us-east-1.amazonaws.com/meal_api_productservice:latest",
+    "cpu   "   : 512,
+    "memory" : 1024,
+    "essential " : true,
+    "portMappings " : [{
+        "containerPort " : 9601,
+        "hostPort      " : 9601,
+        "protocol      " : "tcp"
+    }],
+
+    "logConfiguration" : {
+        "logDriver" : "awslogs",
+        "options" : {
+            "awslogs-group"         : "/ecs/meal-app/product-service",
+            "awslogs-region"        : "us-east-1",
+            "awslogs-stream-prefix" : "ecs"
+        }
+    },
+
+    "secret" : [
+        {
+            "name" : "PORT",
+            "valueFrom" : "aws_ssm_parameter.port.arn"
+        },
+        {
+            "name" : "AWS_REGION",
+            "valueFrom" : "aws_ssm_parameter.aws_region.arn"
+        },
+        {
+            "name" : "GMAIL_USER",
+            "valueFrom" : "aws_ssm_parameter.gmail_user.arn"
+        },
+        {
+            "name" : "GMAIL_PASS",
+            "valueFrom" : "aws_secretsmanager_secret.gmail_password.arn"
+        },
+        {
+            "name" : "DOCDB_PASSWORD",
+            "valueFrom" : "aws_secretsmanager_secret.meal_app_docdb_password.arn"
+        },
+        {
+            "name" : "JWT_ACCESS_SECRET",
+            "valueFrom" : "aws_secretsmanager_secret.meal_app_jwt_access_secret.arn"
+        }
+        
+    ]
+
+}
+]

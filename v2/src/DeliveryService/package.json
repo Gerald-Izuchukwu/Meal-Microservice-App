@@ -1,0 +1,34 @@
+{
+  "name": "deliveryservice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "aws-sdk": "^2.1462.0",
+    "axios": "^1.18.1",
+    "body-parser": "^2.3.0",
+    "dotenv": "^16.3.1",
+    "express": "^5.2.1",
+    "form-data": "^4.0.6",
+    "jsonwebtoken": "^9.0.2",
+    "jws": "^4.0.1",
+    "lodash": "^4.18.1",
+    "minimatch": "^10.2.5",
+    "mongoose": "^9.7.3",
+    "morgan": "^1.10.0",
+    "path-to-regexp": "^8.4.2",
+    "tar": "^7.5.19"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

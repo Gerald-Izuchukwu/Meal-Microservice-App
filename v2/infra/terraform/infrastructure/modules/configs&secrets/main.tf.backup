@@ -1,0 +1,107 @@
+# ==========================================
+# SSM PARAMETER STORE
+# Non-sensitive configuration
+# ==========================================
+
+resource "aws_ssm_parameter" "auth_port" {
+  name  = "/mealapp/auth/PORT"
+  type  = "String"
+  value = var.auth_port
+}
+
+resource "aws_ssm_parameter" "product_port" {
+  name  = "/mealapp/product/PORT"
+  type  = "String"
+  value = var.product_port
+}
+
+resource "aws_ssm_parameter" "order_port" {
+  name  = "/mealapp/order/PORT"
+  type  = "String"
+  value = var.order_port
+}
+
+resource "aws_ssm_parameter" "delivery_port" {
+  name  = "/mealapp/delivery/PORT"
+  type  = "String"
+  value = var.delivery_port
+}
+
+resource "aws_ssm_parameter" "aws_region" {
+  name  = "/mealapp/AWS_REGION"
+  type  = "String"
+  value = var.aws_region
+}
+
+resource "aws_ssm_parameter" "gmail_user" {
+  name  = "/mealapp/GMAIL_USER"
+  type  = "String"
+  value = var.gmail_user
+}
+
+
+# ==========================================
+# AWS SECRETS MANAGER
+# Sensitive values
+# ==========================================
+
+resource "aws_secretsmanager_secret" "gmail_password" {
+  name        = "/mealapp/GMAIL_PASS"
+  description = "Gmail application password"
+
+    tags = {
+    Name        = "Meal App Gmail Password"
+    Environment = "Production"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "gmail_password" {
+  secret_id     = aws_secretsmanager_secret.gmail_password.id
+  secret_string = var.gmail_pass
+}
+
+resource "aws_secretsmanager_secret" "meal_app_docdb_password" {
+  name = "/mealapp/docdb/password"
+  description = "Secret for Meal App Database"
+
+  tags = {
+    Name        = "Meal App DocumentDB Password"
+    Environment = "Production"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "meal_app_docdb_password" {
+  secret_id     = aws_secretsmanager_secret.meal_app_docdb_password.id
+  secret_string = var.doc_db_password
+}
+
+resource "aws_secretsmanager_secret" "meal_app_jwt_access_secret" {
+  name = "/mealapp/jwt/access/secret"
+  description = "Secret for Meal App JWT Access"
+
+  tags = {
+    Name        = "Meal App JWT Access Secret"
+    Environment = "Production"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "meal_app_jwt_access_secret" {
+  secret_id     = aws_secretsmanager_secret.meal_app_jwt_access_secret.id
+  secret_string = var.jwt_access_token_secret
+  
+}
+
+resource "aws_secretsmanager_secret" "meal_app_jwt_refresh_secret" {
+  name = "/mealapp/jwt/refresh/secret"
+  description = "Secret for Meal App JWT Refresh"
+
+  tags = {
+    Name        = "Meal App JWT Refresh Secret"
+    Environment = "Production"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "meal_app_jwt_refresh_secret" {
+  secret_id     = aws_secretsmanager_secret.meal_app_jwt_refresh_secret.id
+  secret_string = var.jwt_refresh_token
+}

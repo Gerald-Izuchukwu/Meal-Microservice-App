@@ -1,0 +1,75 @@
+{
+  "soups": [
+    { "name": "Afang", "type": "Soup", "price": 2500, "discount": false },
+    { "name": "Edikaikong", "type": "Soup", "price": 2500, "discount": false },
+    { "name": "Egwusi", "type": "Soup", "price": 2000, "discount": false },
+    { "name": "White", "type": "Soup", "price": 1800, "discount": false },
+    { "name": "Eforiro", "type": "Soup", "price": 2200, "discount": false },
+    { "name": "Banga", "type": "Soup", "price": 2500, "discount": true },
+    { "name": "Bitterleaf", "type": "Soup", "price": 2300, "discount": false },
+    { "name": "Ogbono", "type": "Soup", "price": 2200, "discount": false },
+    { "name": "Oha", "type": "Soup", "price": 2600, "discount": false },
+    { "name": "Okro", "type": "Soup", "price": 2000, "discount": false },
+    { "name": "Pepper-Soup", "type": "Soup", "price": 3000, "discount": false }
+  ],
+  "swallows": [
+    { "name": "Pounded Yam", "type": "Swallow", "price": 800, "discount": false },
+    { "name": "Eba", "type": "Swallow", "price": 500, "discount": false },
+    { "name": "Fufu", "type": "Swallow", "price": 600, "discount": false },
+    { "name": "Wheat", "type": "Swallow", "price": 700, "discount": false },
+    { "name": "Unripped Plantain", "type": "Swallow", "price": 600, "discount": false },
+    { "name": "Ripped Plantain", "type": "Swallow", "price": 600, "discount": false },
+    { "name": "Semo", "type": "Swallow", "price": 500, "discount": false },
+    { "name": "Amala", "type": "Swallow", "price": 600, "discount": false },
+    { "name": "Tuwo Shinkafa", "type": "Swallow", "price": 600, "discount": false },
+    { "name": "Tuwo Masara", "type": "Swallow", "price": 600, "discount": false }
+  ],
+  "snacks": [
+    { "name": "Meshai", "type": "Snacks", "price": 1500, "discount": false },
+    { "name": "Shawarma", "type": "Snacks", "price": 2500, "discount": true },
+    { "name": "Fruit-Salad", "type": "Snacks", "price": 1800, "discount": false },
+    { "name": "Small-Chops", "type": "Snacks", "price": 3500, "discount": false }
+  ],
+  "drinks": [
+    { "name": "Coca-Cola", "type": "Drinks", "price": 500, "discount": false },
+    { "name": "Fanta", "type": "Drinks", "price": 500, "discount": false },
+    { "name": "Sprite", "type": "Drinks", "price": 500, "discount": false },
+    { "name": "Chapman", "type": "Drinks", "price": 1500, "discount": false },
+    { "name": "Zobo", "type": "Drinks", "price": 1000, "discount": false },
+    { "name": "Bottled Water", "type": "Drinks", "price": 300, "discount": false }
+  ],
+  "dishes": [
+    {
+      "name": "Jollof Rice Special",
+      "type": "Dish",
+      "description": "Smoky party-style jollof rice served with fried plantain and coleslaw",
+      "price": 3500,
+      "discount": false
+    },
+    {
+      "name": "Native Rice Combo",
+      "type": "Dish",
+      "description": "Native jollof rice cooked in palm oil, served with a choice of protein",
+      "price": 3200,
+      "discount": false
+    },
+    {
+      "name": "Fried Rice Deluxe",
+      "type": "Dish",
+      "description": "Vegetable-packed fried rice served with grilled chicken",
+      "price": 3500,
+      "discount": true
+    }
+  ],
+  "singleFoods": [
+    { "name": "Rice", "type": "SingleFood", "price": 1500, "discount": false },
+    { "name": "Beans", "type": "SingleFood", "price": 1200, "discount": false },
+    { "name": "Yam", "type": "SingleFood", "price": 1300, "discount": false }
+  ],
+  "protiens": [
+    { "name": "Beef", "type": "Protien", "price": 800, "discount": false },
+    { "name": "Fish", "type": "Protien", "price": 1200, "discount": false },
+    { "name": "Chicken", "type": "Protien", "price": 1500, "discount": true },
+    { "name": "Turkey", "type": "Protien", "price": 1800, "discount": false }
+  ]
+}

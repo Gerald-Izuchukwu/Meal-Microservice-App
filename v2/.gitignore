@@ -1,0 +1,7 @@
+global-bundle.pem
+nginx.conf
+*.tfvars
+
+.terraform/              
+*.tfstate                
+*.tfstate.*              
