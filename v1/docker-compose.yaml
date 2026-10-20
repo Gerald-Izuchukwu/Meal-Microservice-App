@@ -48,7 +48,7 @@ services:
       retries: 5
 
   order-service:
-    image: gerald22/meal_api_orderservice:latest
+    image: gerald22/meal_api_orderservice:1
     container_name: orderservice
     depends_on:
       rabbitmq:
@@ -70,7 +70,7 @@ services:
       start_period: 30s
 
   product-service:
-    image: gerald22/meal_api_productservice:latest
+    image: gerald22/meal_api_productservice:1
     container_name: productservice
     depends_on:
       rabbitmq:
@@ -92,7 +92,7 @@ services:
       start_period: 30s
 
   user-auth-service:
-    image: gerald22/meal_api_authservice:latest
+    image: gerald22/meal_api_authservice:1
     container_name: authservice
     depends_on:
       rabbitmq:
@@ -114,7 +114,7 @@ services:
       start_period: 30s
 
   delivery-service:
-    image: gerald22/meal_api_deliveryservice:latest
+    image: gerald22/meal_api_deliveryservice:1
     container_name: deliveryservice
     depends_on:
       rabbitmq:
