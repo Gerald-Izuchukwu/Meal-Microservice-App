@@ -3,6 +3,7 @@ dotenv.config({path: './config.env'})
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
+const cors = require('cors')
 const connectDB = require('./database/db')
 const DeliveryRouter = require('./routes/index.js')
 const {startDeliveryConsumer} = require('./controllers/DeliveryContrl')
@@ -10,6 +11,12 @@ connectDB()
 startDeliveryConsumer()
 
 app.use(morgan('dev'))
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+}))
 
 app.use(express.urlencoded({extended: false}))
 app.use(express.json())
