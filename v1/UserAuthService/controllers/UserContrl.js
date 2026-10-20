@@ -25,12 +25,6 @@ const register = async(req, res)=>{
         const user = {
             name, email, password, role
         }
-        // console.log(user)   //delete this block as it repeats in the service on line 42-45
-        await rabbitConnect().then((channel)=>{
-            channel.sendToQueue("USER", Buffer.from(JSON.stringify({user})))
-            console.log('Sending user to USER queue');
-            return
-        })
 
         const result = await registerServiceWithAWS(user)
         // const result = await registerServiceWithNodeMailer(user)
@@ -57,52 +51,90 @@ const register = async(req, res)=>{
     }
 }
 
-const callSaveUser = (req, res)=>{
-    axios.post(`http://${authHost}:${PORT}/meal-api/v1/auth/saveuser`) 
-}
 
+// GET /saveuser: read-only. Reports verification status, saves nothing.
+const callSaveUser = async (req, res) => {
+  let channel;
+  try {
+    channel = await rabbitConnect();
+
+    channel.get("USER", { noAck: false }, async (err, msg) => {
+      try {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!msg) return res.status(404).json({ msg: "No user in queue" });
+
+        const { user } = JSON.parse(msg.content.toString());
+        const verified = await checkVerifiedEmail(user.email);
+
+        channel.nack(msg, false, true);   // always put it back, we only peeked
+        return res.status(200).json({ verified, email: user.email });
+      } catch (e) {
+        console.error(e);
+        try { channel.nack(msg, false, true); } catch {}
+        return res.status(500).json({ error: e.message });
+      } finally {
+        try { await channel.close(); } catch {}
+      }
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: e.message });
+  }
+};
+
+// POST /saveuser — pulls ONE message from queue, checks verification, saves or requeues
 const saveUser = async (req, res) => {
-    try {
-        const identities = await listIdentities();
-        const channel = await rabbitConnect();
-        
-        channel.consume("USER", async (data) => {
-            try {
-                const { user } = JSON.parse(data.content);
-                const { email } = user;
-                
-                if (identities.includes(email)) {
-                    const isVerified = await checkVerifiedEmail(email);
-                    
-                    if (!isVerified) {
-                        await channel.sendToQueue("USER", Buffer.from(JSON.stringify({ user })));
-                        console.log('Sending user back to USER queue since user isnt verified');
-                        
-                        channel.nack(data);
-                        channel.close();
-                        return res.status(400).json({ msg: "User not verified", user });
-                    } else {
-                        await User.create(user);  
-                        console.log(email);
-                        console.log("User saved successfully");
-                        
-                        channel.ack(data);
-                        channel.close();
-                        return res.status(201).json({ msg: "User saved", user });
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-                channel.nack(data);
-                return res.status(500).json({ error: 'Error processing user' });
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: 'Internal server Error: ' + error });
-    }
-}
+  let channel;
+  try {
+    channel = await rabbitConnect();
 
+    channel.get("USER", { noAck: false }, async (err, msg) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      if (!msg) {
+        try { await channel.close(); } catch {}
+        return res.status(404).json({ msg: "No user in queue" });
+      }
+
+      try {
+        const { user } = JSON.parse(msg.content.toString());
+        const { email } = user;
+
+        const identities = await listIdentities();
+        const isVerified = await checkVerifiedEmail(email);
+
+        if (!identities.includes(email) || !isVerified) {
+          channel.nack(msg, false, true);
+          await channel.close();
+          return res.status(400).json({ msg: "User not verified", user });
+        }
+
+        try {
+            await User.create(user);
+        } catch(e){
+            if (e.code !== 11000) throw e; 
+        }
+        channel.ack(msg);
+        await channel.close();
+        console.log(`User saved: ${email}`);
+        return res.status(201).json({ msg: "User saved", user });
+
+      } catch (parseError) {
+        console.error(parseError);
+        try { channel.nack(msg, false, true); } catch {}
+        try { await channel.close(); } catch {}
+        return res.status(500).json({ error: parseError.message });
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    if (channel) try { await channel.close(); } catch {}
+    return res.status(500).json({ error: "Internal server error: " + error.message });
+  }
+};
 
 const login = async(req, res)=>{
     try {

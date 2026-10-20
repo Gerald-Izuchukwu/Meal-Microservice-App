@@ -37,36 +37,17 @@ const UserSchema = new mongoose.Schema({
 })
   
 
-
-
-UserSchema.pre('save', async function (next) {
-    const salt = await bcrypt.genSalt(10)
-    this.password = await bcrypt.hash(this.password, salt)
-    next()
-})
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password')) return; // guard from callback version
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
 function generateUniqueUser(){
     const userName = generateUsername('-', 3)
     return userName
 }
 
-UserSchema.pre("save", async function (next) {
-    const existingUser = await this.constructor.findOne({ email: this.email });
-    if (existingUser) {
-        const error = new Error("Email already exists");
-        error.status = 400;
-        return next(error);
-    }
-    next();
-});
-
-
-
-// UserSchema.pre('save', async function(next){
-//     const userName = generateFromEmail(this.email, 3)
-//     this.uniqueUser = userName
-//     next()
-// })
 
 const User = mongoose.model('User', UserSchema)
 module.exports = User
