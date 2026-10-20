@@ -9,3 +9,7 @@ output "public_subnet_ids" {
 output "private_subnet_ids" {
   value = [aws_subnet.private.id]
 }
+
+output "db_subnet_ids" {
+  value = values(aws_subnet.db_private)[*].id
+}
