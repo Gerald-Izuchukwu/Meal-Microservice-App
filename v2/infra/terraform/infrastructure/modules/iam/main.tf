@@ -41,7 +41,7 @@ resource "aws_iam_role" "ecs_task_role" {
   })
 }
 
-resource "aws_iam_role_policy" "ecs_ses_policy"{
+resource "aws_iam_role_policy" "ecs_ses_policy" {
   name = "ecs_ses_policy"
   role = aws_iam_role.ecs_task_role.id
   policy = jsonencode({
@@ -60,7 +60,7 @@ resource "aws_iam_role_policy" "ecs_ses_policy"{
   })
 }
 
-resource "aws_iam_role_policy" "ecs_sqs_policy"{
+resource "aws_iam_role_policy" "ecs_sqs_policy" {
   name = "ecs_sqs_policy"
   role = aws_iam_role.ecs_task_role.id
   policy = jsonencode({
