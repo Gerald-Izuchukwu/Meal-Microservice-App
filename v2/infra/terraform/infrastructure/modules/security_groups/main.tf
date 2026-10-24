@@ -106,10 +106,6 @@ resource "aws_vpc_security_group_egress_rule" "product_egress" {
 }
 
 # ── Order service SG — internal only, called by product via SQS ──────────────
-# Order service is never called directly over HTTP from Nginx.
-# It consumes from SQS (outbound call it makes itself).
-# The only inbound it needs is from product service for the proxy routes
-# (/myOrders etc.) that product forwards internally.
 resource "aws_security_group" "order_sg" {
   name   = "meal-app-order-sg"
   vpc_id = var.vpc_id
@@ -167,32 +163,32 @@ resource "aws_security_group" "docdb_sg" {
 resource "aws_vpc_security_group_ingress_rule" "docdb_from_auth" {
   security_group_id            = aws_security_group.docdb_sg.id
   referenced_security_group_id = aws_security_group.auth_sg.id
-  from_port                    = 27017
-  to_port                      = 27017
+  from_port                    = var.docdb_port
+  to_port                      = var.docdb_port
   ip_protocol                  = "tcp"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "docdb_from_product" {
   security_group_id            = aws_security_group.docdb_sg.id
   referenced_security_group_id = aws_security_group.product_sg.id
-  from_port                    = 27017
-  to_port                      = 27017
+  from_port                    = var.docdb_port
+  to_port                      = var.docdb_port
   ip_protocol                  = "tcp"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "docdb_from_order" {
   security_group_id            = aws_security_group.docdb_sg.id
   referenced_security_group_id = aws_security_group.order_sg.id
-  from_port                    = 27017
-  to_port                      = 27017
+  from_port                    = var.docdb_port
+  to_port                      = var.docdb_port
   ip_protocol                  = "tcp"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "docdb_from_delivery" {
   security_group_id            = aws_security_group.docdb_sg.id
   referenced_security_group_id = aws_security_group.delivery_sg.id
-  from_port                    = 27017
-  to_port                      = 27017
+  from_port                    = var.docdb_port
+  to_port                      = var.docdb_port
   ip_protocol                  = "tcp"
 }
 
