@@ -85,9 +85,9 @@ resource "aws_vpc_security_group_egress_rule" "auth_egress" {
 resource "aws_security_group" "product_sg" {
   name   = "meal-app-product-sg"
   vpc_id = var.vpc_id
-  tags   = { 
-    Name = "Meal App Product SG", 
-    Environment = "Production" 
+  tags = {
+    Name        = "Meal App Product SG",
+    Environment = "Production"
   }
 }
 
@@ -109,9 +109,9 @@ resource "aws_vpc_security_group_egress_rule" "product_egress" {
 resource "aws_security_group" "order_sg" {
   name   = "meal-app-order-sg"
   vpc_id = var.vpc_id
-  tags   = { 
-    Name = "Meal App Order SG", 
-    Environment = "Production" 
+  tags = {
+    Name        = "Meal App Order SG",
+    Environment = "Production"
   }
 }
 
@@ -133,9 +133,9 @@ resource "aws_vpc_security_group_egress_rule" "order_egress" {
 resource "aws_security_group" "delivery_sg" {
   name   = "meal-app-delivery-sg"
   vpc_id = var.vpc_id
-  tags   = { 
-    Name = "Meal App Delivery SG", 
-    Environment = "Production" 
+  tags = {
+    Name        = "Meal App Delivery SG",
+    Environment = "Production"
   }
 }
 
@@ -157,7 +157,10 @@ resource "aws_vpc_security_group_egress_rule" "delivery_egress" {
 resource "aws_security_group" "docdb_sg" {
   name   = "meal-app-docdb-sg"
   vpc_id = var.vpc_id
-  tags   = { Name = "Meal App DocumentDB SG", Environment = "Production" }
+  tags = {
+    Name        = "Meal App DocumentDB SG",
+    Environment = "Production"
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "docdb_from_auth" {
