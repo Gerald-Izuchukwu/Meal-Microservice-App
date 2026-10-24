@@ -1,8 +1,8 @@
 module "configs_and_secrets" {
-  source                  = "./modules/configs&secrets"
-  doc_db_password         = var.doc_db_password
-  jwt_access_token_secret = var.jwt_access_token_secret
-  jwt_refresh_token       = var.jwt_refresh_token
+  source                     = "./modules/configs&secrets"
+  doc_db_password            = var.doc_db_password
+  jwt_access_token_secret    = var.jwt_access_token_secret
+  jwt_refresh_token          = var.jwt_refresh_token
   rabbitmq_connection_string = var.rabbitmq_connection_string
   rabbitmq_default_user      = var.rabbitmq_default_user
   rabbitmq_default_pass      = var.rabbitmq_default_pass
@@ -26,19 +26,25 @@ module "configs_and_secrets" {
   delivery_port              = var.delivery_port
   delivery_db_name           = var.delivery_db_name
   delivery_host              = var.delivery_host
-  aws_region              = var.aws_region
-  gmail_user              = var.gmail_user
+  aws_region                 = var.aws_region
+  gmail_user                 = var.gmail_user
 
 }
 
 module "vpc" {
-  source = "./modules/vpc"
+  source     = "./modules/vpc"
+  aws_region = var.aws_region
 }
 
 module "security_groups" {
-  source = "./modules/security_groups"
-  vpc_id = module.vpc.vpc_id
-  # ecs_ip = module.compute.ecs_ip
+  source        = "./modules/security_groups"
+  vpc_id        = module.vpc.vpc_id
+  auth_port     = var.auth_port
+  product_port  = var.product_port
+  order_port    = var.order_port
+  delivery_port = var.delivery_port
+  docdb_port    = var.cluster_port
+  nginx_port = var.nginx_port
 
 }
 
@@ -51,12 +57,14 @@ module "documentdb" {
   doc_db_password         = var.doc_db_password
   cluster_master_username = var.cluster_master_username
   cluster_port            = var.cluster_port
+  doc_db_sg_id            = module.security_groups.docdb_sg_id
+  db_subnet_ids           = module.vpc.db_subnet_ids
 }
 
 module "compute" {
-  source = "./modules/compute"
+  source                      = "./modules/compute"
   ecs_task_execution_role_arn = module.iam.ecs_task_execution_role_arn
-  vpc_id = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
-  ecs_security_group_id = module.security_groups.ecs_security_group_id
+  vpc_id                      = module.vpc.vpc_id
+  private_subnet_ids          = module.vpc.private_subnet_ids
+  ecs_security_group_id       = module.security_groups.ecs_security_group_id
 }

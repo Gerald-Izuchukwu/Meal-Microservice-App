@@ -45,8 +45,8 @@ resource "aws_security_group" "nginx_sg" {
 resource "aws_vpc_security_group_ingress_rule" "nginx_from_alb" {
   security_group_id            = aws_security_group.nginx_sg.id
   referenced_security_group_id = aws_security_group.meal_app_alb_sg.id
-  from_port                    = 8084
-  to_port                      = 8084
+  from_port                    = var.nginx_port
+  to_port                      = var.nginx_port
   ip_protocol                  = "tcp"
 }
 

@@ -4,5 +4,6 @@ variable "product_port" {}
 variable "order_port" {}
 variable "delivery_port" {}
 variable "docdb_port" {}
+variable "nginx_port" {}
 # variable "ecs_ip" {}
 # variable "ecs_security_group_id" {}
