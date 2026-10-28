@@ -3,6 +3,7 @@
 # ---------------------------------------------------------
 
 resource "aws_ssm_parameter" "auth" {
+  tier = "Standard"
 
   for_each = local.auth_parameters
 
@@ -29,10 +30,12 @@ resource "aws_ssm_parameter" "auth" {
 # ---------------------------------------------------------
 
 resource "aws_ssm_parameter" "product" {
+  tier = "Standard"
+
   for_each = local.product_parameters
 
-  name  = "/meal-app/product/${each.key}"
-  type  = contains([
+  name = "/meal-app/product/${each.key}"
+  type = contains([
     "RABBITMQ_CONNECTION_STRING",
     "RABBITMQ_DEFAULT_PASS",
     "JWT_ACCESS_TOKEN_SECRET",
@@ -52,10 +55,11 @@ resource "aws_ssm_parameter" "product" {
 # ---------------------------------------------------------
 
 resource "aws_ssm_parameter" "order" {
+  tier = "Standard" 
   for_each = local.order_parameters
 
-  name  = "/meal-app/order/${each.key}"
-  type  = contains([
+  name = "/meal-app/order/${each.key}"
+  type = contains([
     "RABBITMQ_CONNECTION_STRING",
     "RABBITMQ_DEFAULT_PASS",
     "JWT_ACCESS_TOKEN_SECRET",
@@ -76,10 +80,11 @@ resource "aws_ssm_parameter" "order" {
 # ---------------------------------------------------------
 
 resource "aws_ssm_parameter" "delivery" {
+  tier = "Standard"
   for_each = local.delivery_parameters
 
-  name  = "/meal-app/delivery/${each.key}"
-  type  = contains([
+  name = "/meal-app/delivery/${each.key}"
+  type = contains([
     "RABBITMQ_CONNECTION_STRING",
     "RABBITMQ_DEFAULT_PASS",
     "JWT_ACCESS_TOKEN_SECRET",
