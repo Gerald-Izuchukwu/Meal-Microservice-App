@@ -2,6 +2,7 @@ const dotenv = require('dotenv')
 dotenv.config({path: './config.env'})
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 const connectDB = require('./database/db')
 const rabbitConnect = require('./rabbitConnect')
@@ -10,6 +11,7 @@ connectDB()
 rabbitConnect()
 
 app.use(morgan('dev'))
+app.use(cors())
 
 
 app.use(express.urlencoded({extended: false}))

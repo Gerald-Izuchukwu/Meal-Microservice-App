@@ -44,7 +44,7 @@ module "security_groups" {
   order_port    = var.order_port
   delivery_port = var.delivery_port
   docdb_port    = var.cluster_port
-  nginx_port = var.nginx_port
+  nginx_port    = var.nginx_port
 
 }
 

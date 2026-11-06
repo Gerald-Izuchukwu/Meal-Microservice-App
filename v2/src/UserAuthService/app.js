@@ -12,7 +12,12 @@ rabbitConnect()
 
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
-app.use(cors())
+app.use(cors({
+  origin: ['http://localhost:80'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+}))
 app.use(morgan('dev'))
 
 app.use(express.urlencoded({extended: false}))

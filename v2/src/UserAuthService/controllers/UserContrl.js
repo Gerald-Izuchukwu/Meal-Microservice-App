@@ -57,52 +57,69 @@ const register = async(req, res)=>{
     }
 }
 
-const callSaveUser = (req, res)=>{
-    axios.post(`http://${authHost}:${PORT}/meal-api/v1/auth/saveuser`) 
-}
+// GET /saveuser — just calls POST /saveuser internally and forwards the response
+const callSaveUser = async (req, res) => {
+  try {
+    const result = await axios.post(
+      `http://${authHost}:${PORT}/meal-api/v1/auth/saveuser`
+    );
+    return res.status(result.status).json(result.data);
+  } catch (error) {
+    const status = error.response?.status || 500;
+    const data   = error.response?.data   || { error: error.message };
+    return res.status(status).json(data);
+  }
+};
 
+// POST /saveuser — pulls ONE message from queue, checks verification, saves or requeues
 const saveUser = async (req, res) => {
-    try {
-        const identities = await listIdentities();
-        const channel = await rabbitConnect();
-        
-        channel.consume("USER", async (data) => {
-            try {
-                const { user } = JSON.parse(data.content);
-                const { email } = user;
-                
-                if (identities.includes(email)) {
-                    const isVerified = await checkVerifiedEmail(email);
-                    
-                    if (!isVerified) {
-                        await channel.sendToQueue("USER", Buffer.from(JSON.stringify({ user })));
-                        console.log('Sending user back to USER queue since user isnt verified');
-                        
-                        channel.nack(data);
-                        channel.close();
-                        return res.status(400).json({ msg: "User not verified", user });
-                    } else {
-                        await User.create(user);  
-                        console.log(email);
-                        console.log("User saved successfully");
-                        
-                        channel.ack(data);
-                        channel.close();
-                        return res.status(201).json({ msg: "User saved", user });
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-                channel.nack(data);
-                return res.status(500).json({ error: 'Error processing user' });
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: 'Internal server Error: ' + error });
-    }
-}
+  let channel;
+  try {
+    channel = await rabbitConnect();
 
+    channel.get("USER", { noAck: false }, async (err, msg) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      if (!msg) {
+        await channel.close();
+        return res.status(404).json({ msg: "No user in queue" });
+      }
+
+      try {
+        const { user } = JSON.parse(msg.content.toString());
+        const { email } = user;
+
+        const identities = await listIdentities();
+        const isVerified = await checkVerifiedEmail(email);
+
+        if (!identities.includes(email) || !isVerified) {
+          channel.nack(msg, false, true);
+          await channel.close();
+          return res.status(400).json({ msg: "User not verified", user });
+        }
+
+        await User.create(user);
+        channel.ack(msg);
+        await channel.close();
+        console.log(`User saved: ${email}`);
+        return res.status(201).json({ msg: "User saved", user });
+
+      } catch (parseError) {
+        console.error(parseError);
+        channel.nack(msg, false, true);
+        try { await channel.close(); } catch {}
+        return res.status(500).json({ error: parseError.message });
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    if (channel) try { await channel.close(); } catch {}
+    return res.status(500).json({ error: "Internal server error: " + error.message });
+  }
+};
 
 const login = async(req, res)=>{
     try {

@@ -55,7 +55,7 @@ resource "aws_ssm_parameter" "product" {
 # ---------------------------------------------------------
 
 resource "aws_ssm_parameter" "order" {
-  tier = "Standard" 
+  tier     = "Standard"
   for_each = local.order_parameters
 
   name = "/meal-app/order/${each.key}"
@@ -80,7 +80,7 @@ resource "aws_ssm_parameter" "order" {
 # ---------------------------------------------------------
 
 resource "aws_ssm_parameter" "delivery" {
-  tier = "Standard"
+  tier     = "Standard"
   for_each = local.delivery_parameters
 
   name = "/meal-app/delivery/${each.key}"

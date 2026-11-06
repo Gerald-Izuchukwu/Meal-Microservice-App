@@ -19,7 +19,7 @@ variable "rabbitmq_default_port" {}
 variable "mongo_db_username" {}
 variable "mongo_db_password" { sensitive = true }
 variable "mongo_db_host" {}
-variable "db_post_message" {} 
+variable "db_post_message" {}
 variable "auth_port" {}
 variable "auth_db_name" {}
 variable "auth_host" {}
@@ -34,3 +34,4 @@ variable "delivery_db_name" {}
 variable "delivery_host" {}
 variable "aws_secret_access_key" { sensitive = true }
 variable "aws_secret_access_key_id" { sensitive = true }
+variable "nginx_port" {}
